@@ -186,6 +186,19 @@ function Dashboard() {
         <Metric label="Nota emocional" value={avgMood ? avgMood.toFixed(1) : "—"} hint="0–10" />
       </div>
 
+      {garmin.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <Metric label="Sono médio (Garmin)" value={garminAvgSleep ? `${garminAvgSleep.toFixed(1)}h` : "—"} />
+          <Metric label="Score do sono" value={avgScore ? avgScore.toFixed(0) : "—"} hint={avgScore >= 80 ? "ótimo" : avgScore >= 70 ? "ok" : "baixo"} />
+          <Metric label="FC repouso" value={avgRhr ? avgRhr.toFixed(0) : "—"} hint="bpm" />
+          <Metric label="Body Battery" value={avgBb ? avgBb.toFixed(0) : "—"} />
+          <Metric label="Noites < 6h30" value={`${shortNights}/${garminDur.length || 7}`} tone={shortNights >= 2 ? "muted" : undefined} />
+          <Metric label="Melhor noite" value={bestNight?.sleep_score ? `${bestNight.sleep_score}` : "—"} hint={bestNight?.date.slice(5) ?? ""} tone="success" />
+          <Metric label="Pior noite" value={worstNight?.sleep_score ? `${worstNight.sleep_score}` : "—"} hint={worstNight?.date.slice(5) ?? ""} tone="muted" />
+          <Metric label="VFC predominante" value={hrvDominant} />
+        </div>
+      )}
+
       <Card className="mb-5">
         <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-base">Status da semana</CardTitle>
