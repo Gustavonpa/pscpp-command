@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChevronLeft, ChevronRight, Plus, BookOpen, AlertTriangle, ClipboardCheck } from "lucide-react";
 import { startOfWeek, endOfWeek, fmtDate, fmtWeekLabel, addDays } from "@/lib/week";
+import { parseDurationToHours } from "@/lib/garmin";
 
 export const Route = createFileRoute("/")({
   head: () => ({
