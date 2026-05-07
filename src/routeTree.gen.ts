@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudyRouteImport } from './routes/study'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as ImportGarminRouteImport } from './routes/import-garmin'
+import { Route as GarminSleepRouteImport } from './routes/garmin-sleep'
 import { Route as CheckinRouteImport } from './routes/checkin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +25,16 @@ const StudyRoute = StudyRouteImport.update({
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImportGarminRoute = ImportGarminRouteImport.update({
+  id: '/import-garmin',
+  path: '/import-garmin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GarminSleepRoute = GarminSleepRouteImport.update({
+  id: '/garmin-sleep',
+  path: '/garmin-sleep',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckinRoute = CheckinRouteImport.update({
@@ -45,6 +57,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/checkin': typeof CheckinRoute
+  '/garmin-sleep': typeof GarminSleepRoute
+  '/import-garmin': typeof ImportGarminRoute
   '/review': typeof ReviewRoute
   '/study': typeof StudyRoute
 }
@@ -52,6 +66,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/checkin': typeof CheckinRoute
+  '/garmin-sleep': typeof GarminSleepRoute
+  '/import-garmin': typeof ImportGarminRoute
   '/review': typeof ReviewRoute
   '/study': typeof StudyRoute
 }
@@ -60,21 +76,47 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/checkin': typeof CheckinRoute
+  '/garmin-sleep': typeof GarminSleepRoute
+  '/import-garmin': typeof ImportGarminRoute
   '/review': typeof ReviewRoute
   '/study': typeof StudyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/checkin' | '/review' | '/study'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/checkin'
+    | '/garmin-sleep'
+    | '/import-garmin'
+    | '/review'
+    | '/study'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/checkin' | '/review' | '/study'
-  id: '__root__' | '/' | '/auth' | '/checkin' | '/review' | '/study'
+  to:
+    | '/'
+    | '/auth'
+    | '/checkin'
+    | '/garmin-sleep'
+    | '/import-garmin'
+    | '/review'
+    | '/study'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/checkin'
+    | '/garmin-sleep'
+    | '/import-garmin'
+    | '/review'
+    | '/study'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   CheckinRoute: typeof CheckinRoute
+  GarminSleepRoute: typeof GarminSleepRoute
+  ImportGarminRoute: typeof ImportGarminRoute
   ReviewRoute: typeof ReviewRoute
   StudyRoute: typeof StudyRoute
 }
@@ -93,6 +135,20 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/import-garmin': {
+      id: '/import-garmin'
+      path: '/import-garmin'
+      fullPath: '/import-garmin'
+      preLoaderRoute: typeof ImportGarminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/garmin-sleep': {
+      id: '/garmin-sleep'
+      path: '/garmin-sleep'
+      fullPath: '/garmin-sleep'
+      preLoaderRoute: typeof GarminSleepRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkin': {
@@ -123,6 +179,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   CheckinRoute: CheckinRoute,
+  GarminSleepRoute: GarminSleepRoute,
+  ImportGarminRoute: ImportGarminRoute,
   ReviewRoute: ReviewRoute,
   StudyRoute: StudyRoute,
 }

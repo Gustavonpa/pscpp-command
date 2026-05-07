@@ -65,6 +65,63 @@ export type Database = {
         }
         Relationships: []
       }
+      garmin_sleep_metrics: {
+        Row: {
+          bedtime: string | null
+          body_battery: number | null
+          created_at: string
+          date: string
+          hrv_status: string | null
+          id: string
+          raw_data: Json | null
+          respiration: number | null
+          resting_heart_rate: number | null
+          sleep_duration: string | null
+          sleep_need: string | null
+          sleep_quality: string | null
+          sleep_score: number | null
+          updated_at: string
+          user_id: string
+          wake_time: string | null
+        }
+        Insert: {
+          bedtime?: string | null
+          body_battery?: number | null
+          created_at?: string
+          date: string
+          hrv_status?: string | null
+          id?: string
+          raw_data?: Json | null
+          respiration?: number | null
+          resting_heart_rate?: number | null
+          sleep_duration?: string | null
+          sleep_need?: string | null
+          sleep_quality?: string | null
+          sleep_score?: number | null
+          updated_at?: string
+          user_id: string
+          wake_time?: string | null
+        }
+        Update: {
+          bedtime?: string | null
+          body_battery?: number | null
+          created_at?: string
+          date?: string
+          hrv_status?: string | null
+          id?: string
+          raw_data?: Json | null
+          respiration?: number | null
+          resting_heart_rate?: number | null
+          sleep_duration?: string | null
+          sleep_need?: string | null
+          sleep_quality?: string | null
+          sleep_score?: number | null
+          updated_at?: string
+          user_id?: string
+          wake_time?: string | null
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           correct: number | null
