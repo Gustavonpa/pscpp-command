@@ -14,7 +14,183 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_checkins: {
+        Row: {
+          created_at: string
+          date: string
+          did_study: boolean | null
+          did_training: boolean | null
+          energy: number | null
+          garmin_sleep_score: number | null
+          id: string
+          meal_ready: boolean | null
+          mood: number | null
+          notes: string | null
+          phone_before_block: boolean | null
+          sleep_hours: number | null
+          user_id: string
+          wake_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          did_study?: boolean | null
+          did_training?: boolean | null
+          energy?: number | null
+          garmin_sleep_score?: number | null
+          id?: string
+          meal_ready?: boolean | null
+          mood?: number | null
+          notes?: string | null
+          phone_before_block?: boolean | null
+          sleep_hours?: number | null
+          user_id: string
+          wake_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          did_study?: boolean | null
+          did_training?: boolean | null
+          energy?: number | null
+          garmin_sleep_score?: number | null
+          id?: string
+          meal_ready?: boolean | null
+          mood?: number | null
+          notes?: string | null
+          phone_before_block?: boolean | null
+          sleep_hours?: number | null
+          user_id?: string
+          wake_time?: string | null
+        }
+        Relationships: []
+      }
+      study_sessions: {
+        Row: {
+          correct: number | null
+          created_at: string
+          date: string
+          difficulty: string | null
+          duration_minutes: number
+          id: string
+          next_action: string | null
+          questions: number | null
+          subject: string
+          type: string
+          user_id: string
+          wrong: number | null
+        }
+        Insert: {
+          correct?: number | null
+          created_at?: string
+          date: string
+          difficulty?: string | null
+          duration_minutes: number
+          id?: string
+          next_action?: string | null
+          questions?: number | null
+          subject: string
+          type: string
+          user_id: string
+          wrong?: number | null
+        }
+        Update: {
+          correct?: number | null
+          created_at?: string
+          date?: string
+          difficulty?: string | null
+          duration_minutes?: number
+          id?: string
+          next_action?: string | null
+          questions?: number | null
+          subject?: string
+          type?: string
+          user_id?: string
+          wrong?: number | null
+        }
+        Relationships: []
+      }
+      training_sessions: {
+        Row: {
+          created_at: string
+          date: string
+          distance_km: number | null
+          duration_minutes: number | null
+          id: string
+          is_long_run: boolean | null
+          notes: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          distance_km?: number | null
+          duration_minutes?: number | null
+          id?: string
+          is_long_run?: boolean | null
+          notes?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          distance_km?: number | null
+          duration_minutes?: number | null
+          id?: string
+          is_long_run?: boolean | null
+          notes?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_reviews: {
+        Row: {
+          biggest_distraction: string | null
+          created_at: string
+          id: string
+          next_week_focus: string | null
+          o2con_progress: string | null
+          o2finance_progress: string | null
+          rating: number | null
+          relationship_quality: string | null
+          user_id: string
+          week_start: string
+          what_blocked: string | null
+          what_worked: string | null
+        }
+        Insert: {
+          biggest_distraction?: string | null
+          created_at?: string
+          id?: string
+          next_week_focus?: string | null
+          o2con_progress?: string | null
+          o2finance_progress?: string | null
+          rating?: number | null
+          relationship_quality?: string | null
+          user_id: string
+          week_start: string
+          what_blocked?: string | null
+          what_worked?: string | null
+        }
+        Update: {
+          biggest_distraction?: string | null
+          created_at?: string
+          id?: string
+          next_week_focus?: string | null
+          o2con_progress?: string | null
+          o2finance_progress?: string | null
+          rating?: number | null
+          relationship_quality?: string | null
+          user_id?: string
+          week_start?: string
+          what_blocked?: string | null
+          what_worked?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
