@@ -34,6 +34,14 @@ type Checkin = {
 };
 type Study = { date: string; duration_minutes: number };
 type Training = { date: string; is_long_run: boolean };
+type GarminSleep = {
+  date: string;
+  sleep_score: number | null;
+  resting_heart_rate: number | null;
+  body_battery: number | null;
+  hrv_status: string | null;
+  sleep_duration: string | null;
+};
 
 function Dashboard() {
   const { user, loading } = useAuthGate();
@@ -41,25 +49,36 @@ function Dashboard() {
   const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [studies, setStudies] = useState<Study[]>([]);
   const [trainings, setTrainings] = useState<Training[]>([]);
+  const [garmin, setGarmin] = useState<GarminSleep[]>([]);
+  const [garminPrev, setGarminPrev] = useState<GarminSleep[]>([]);
 
   const start = useMemo(() => startOfWeek(weekRef), [weekRef]);
   const end = useMemo(() => endOfWeek(weekRef), [weekRef]);
+  const prevStart = useMemo(() => addDays(start, -7), [start]);
+  const prevEnd = useMemo(() => addDays(end, -7), [end]);
 
   useEffect(() => {
     if (!user) return;
     const s = fmtDate(start);
     const e = fmtDate(end);
+    const ps = fmtDate(prevStart);
+    const pe = fmtDate(prevEnd);
+    const garminCols = "date,sleep_score,resting_heart_rate,body_battery,hrv_status,sleep_duration";
     (async () => {
-      const [c, st, tr] = await Promise.all([
+      const [c, st, tr, g, gp] = await Promise.all([
         supabase.from("daily_checkins").select("*").gte("date", s).lte("date", e),
         supabase.from("study_sessions").select("date,duration_minutes").gte("date", s).lte("date", e),
         supabase.from("training_sessions").select("date,is_long_run").gte("date", s).lte("date", e),
+        supabase.from("garmin_sleep_metrics").select(garminCols).gte("date", s).lte("date", e),
+        supabase.from("garmin_sleep_metrics").select(garminCols).gte("date", ps).lte("date", pe),
       ]);
       setCheckins((c.data ?? []) as Checkin[]);
       setStudies((st.data ?? []) as Study[]);
       setTrainings((tr.data ?? []) as Training[]);
+      setGarmin((g.data ?? []) as GarminSleep[]);
+      setGarminPrev((gp.data ?? []) as GarminSleep[]);
     })();
-  }, [user, start, end]);
+  }, [user, start, end, prevStart, prevEnd]);
 
   if (loading || !user) return null;
 
