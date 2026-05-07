@@ -104,11 +104,32 @@ function Dashboard() {
     score >= 4 ? { label: "Aceitável", tone: "warning" as const } :
                  { label: "Crítica", tone: "destructive" as const };
 
+  // Garmin-derived aggregates
+  const garminDur = garmin.map((g) => parseDurationToHours(g.sleep_duration)).filter((v): v is number => v !== null);
+  const garminAvgSleep = garminDur.length ? garminDur.reduce((a, b) => a + b, 0) / garminDur.length : 0;
+  const scoreVals = garmin.map((g) => g.sleep_score).filter((v): v is number => v !== null);
+  const avgScore = scoreVals.length ? scoreVals.reduce((a, b) => a + b, 0) / scoreVals.length : 0;
+  const rhrVals = garmin.map((g) => g.resting_heart_rate).filter((v): v is number => v !== null);
+  const avgRhr = rhrVals.length ? rhrVals.reduce((a, b) => a + b, 0) / rhrVals.length : 0;
+  const bbVals = garmin.map((g) => g.body_battery).filter((v): v is number => v !== null);
+  const avgBb = bbVals.length ? bbVals.reduce((a, b) => a + b, 0) / bbVals.length : 0;
+  const shortNights = garminDur.filter((h) => h < 6.5).length;
+  const bestNight = garmin.reduce<GarminSleep | null>((acc, g) => (g.sleep_score && (!acc || (acc.sleep_score ?? 0) < g.sleep_score) ? g : acc), null);
+  const worstNight = garmin.reduce<GarminSleep | null>((acc, g) => (g.sleep_score && (!acc || (acc.sleep_score ?? 999) > g.sleep_score) ? g : acc), null);
+  const hrvCounts = garmin.reduce<Record<string, number>>((acc, g) => { if (g.hrv_status) acc[g.hrv_status] = (acc[g.hrv_status] ?? 0) + 1; return acc; }, {});
+  const hrvDominant = Object.entries(hrvCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
+  const prevRhrVals = garminPrev.map((g) => g.resting_heart_rate).filter((v): v is number => v !== null);
+  const prevAvgRhr = prevRhrVals.length ? prevRhrVals.reduce((a, b) => a + b, 0) / prevRhrVals.length : 0;
+
   const alerts: string[] = [];
   if (studyBlocks < 3) alerts.push("Atenção à consistência: menos de 3 blocos de estudo na semana.");
   if (sleepValues.length > 0 && avgSleep < 6.5) alerts.push("Sono prejudicando performance: média abaixo de 6h30.");
   if (phoneAbuse > 2) alerts.push("Manhã sendo sequestrada: celular antes do primeiro bloco em mais de 2 dias.");
   if (trainingsCount === 0) alerts.push("Corpo fora do plano: nenhum treino registrado.");
+  if (avgScore > 0 && avgScore < 70) alerts.push("Seu sono está abaixo do ideal para sustentar estudo, treino e O2con.");
+  if (shortNights >= 2) alerts.push("Você teve noites curtas demais. Isso pode prejudicar sua consistência no PSCPP.");
+  if (prevAvgRhr > 0 && avgRhr > prevAvgRhr) alerts.push("FC de repouso subiu vs. semana anterior: possível sinal de fadiga.");
+  if (avgBb > 0 && avgBb < 70 && bbVals.length > 0) alerts.push("Body Battery médio baixo: atenção à recuperação antes de aumentar carga.");
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
 
