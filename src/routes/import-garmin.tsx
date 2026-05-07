@@ -60,7 +60,7 @@ function ImportGarmin() {
   const doImport = async () => {
     if (!rows.length) return;
     setImporting(true);
-    const payload = rows.map((r) => ({ ...r, user_id: user.id }));
+    const payload = rows.map((r) => ({ ...r, raw_data: r.raw_data as never, user_id: user.id }));
     const { error } = await supabase
       .from("garmin_sleep_metrics")
       .upsert(payload, { onConflict: "user_id,date" });
