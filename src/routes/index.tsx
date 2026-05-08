@@ -136,11 +136,41 @@ function Dashboard() {
   const prevRhrVals = garminPrev.map((g) => g.resting_heart_rate).filter((v): v is number => v !== null);
   const prevAvgRhr = prevRhrVals.length ? prevRhrVals.reduce((a, b) => a + b, 0) / prevRhrVals.length : 0;
 
+  // Garmin training aggregates
+  const trWithCat = gTrainings.map((t) => ({ ...t, cat: classifyTraining(t.activity_type) }));
+  const gTrCount = trWithCat.length;
+  const runs = trWithCat.filter((t) => t.cat === "corrida");
+  const strength = trWithCat.filter((t) => t.cat === "fortalecimento");
+  const walks = trWithCat.filter((t) => t.cat === "caminhada");
+  const totalDistKm = runs.reduce((a, t) => a + (t.distance_km ?? 0), 0);
+  const totalTrainMin = trWithCat.reduce((a, t) => a + (t.duration_minutes ?? 0), 0);
+  const totalCalories = trWithCat.reduce((a, t) => a + (t.calories ?? 0), 0);
+  const longRun = runs.reduce<typeof runs[number] | null>((acc, r) => ((r.distance_km ?? 0) > (acc?.distance_km ?? 0) ? r : acc), null);
+  const runHr = runs.map((r) => r.average_heart_rate).filter((v): v is number => v !== null);
+  const avgRunHr = runHr.length ? runHr.reduce((a, b) => a + b, 0) / runHr.length : 0;
+  const runPaces = runs.map((r) => paceToSeconds(r.average_pace)).filter((v): v is number => v !== null);
+  const avgRunPaceSec = runPaces.length ? runPaces.reduce((a, b) => a + b, 0) / runPaces.length : 0;
+
+  // Cross sleep+training: intense training after low-sleep night
+  const intenseAfterPoorSleep = trWithCat.some((t) => {
+    if ((t.duration_minutes ?? 0) < 40) return false;
+    const prevDay = fmtDate(addDays(new Date(t.activity_date), -1));
+    const sl = garmin.find((g) => g.date === prevDay);
+    const slHours = sl ? parseDurationToHours(sl.sleep_duration) : null;
+    return (slHours !== null && slHours < 6.5) || (sl?.sleep_score !== null && sl?.sleep_score !== undefined && sl.sleep_score < 65);
+  });
+
   const alerts: string[] = [];
   if (studyBlocks < 3) alerts.push("Atenção à consistência: menos de 3 blocos de estudo na semana.");
   if (sleepValues.length > 0 && avgSleep < 6.5) alerts.push("Sono prejudicando performance: média abaixo de 6h30.");
   if (phoneAbuse > 2) alerts.push("Manhã sendo sequestrada: celular antes do primeiro bloco em mais de 2 dias.");
-  if (trainingsCount === 0) alerts.push("Corpo fora do plano: nenhum treino registrado.");
+  if (gTrCount === 0) alerts.push("Corpo fora do plano: nenhum treino registrado.");
+  else if (gTrCount < 3) alerts.push("Volume de treino abaixo do plano: menos de 3 treinos na semana.");
+  if (gTrCount > 0 && runs.length === 0) alerts.push("Nenhuma corrida registrada. Atenção à preparação para a meia.");
+  if (gTrCount > 0 && strength.length === 0) alerts.push("Fortalecimento ausente. Risco maior de lesão.");
+  if (runs.length > 0 && totalDistKm < 15) alerts.push("Quilometragem semanal baixa para evolução na meia.");
+  if (longRun && (longRun.distance_km ?? 0) < 8) alerts.push("Longão ainda abaixo do planejado para a meia.");
+  if (intenseAfterPoorSleep) alerts.push("Treino realizado com sono baixo. Atenção à recuperação.");
   if (avgScore > 0 && avgScore < 70) alerts.push("Seu sono está abaixo do ideal para sustentar estudo, treino e O2con.");
   if (shortNights >= 2) alerts.push("Você teve noites curtas demais. Isso pode prejudicar sua consistência no PSCPP.");
   if (prevAvgRhr > 0 && avgRhr > prevAvgRhr) alerts.push("FC de repouso subiu vs. semana anterior: possível sinal de fadiga.");
