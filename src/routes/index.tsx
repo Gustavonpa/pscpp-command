@@ -243,6 +243,28 @@ function Dashboard() {
         </div>
       )}
 
+      {gTrCount > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <Metric label="Treinos (Garmin)" value={gTrCount} progress={(gTrCount / 4) * 100} />
+          <Metric label="Corridas" value={runs.length} progress={(runs.length / 3) * 100} />
+          <Metric label="Fortalecimentos" value={strength.length} progress={(strength.length / 2) * 100} />
+          <Metric label="Caminhadas" value={walks.length} />
+          <Metric label="Distância corrida" value={`${totalDistKm.toFixed(1)} km`} />
+          <Metric label="Tempo total treino" value={`${(totalTrainMin / 60).toFixed(1)}h`} hint={`${Math.round(totalTrainMin)} min`} />
+          <Metric
+            label="Longão"
+            value={longRun?.distance_km ? `${longRun.distance_km.toFixed(1)} km` : "Pendente"}
+            hint={longRun?.activity_date.slice(5) ?? ""}
+            tone={longRun?.distance_km && longRun.distance_km >= 8 ? "success" : "muted"}
+          />
+          <Metric label="Maior corrida" value={longRun?.distance_km ? `${longRun.distance_km.toFixed(1)} km` : "—"} />
+          <Metric label="Pace médio" value={avgRunPaceSec ? secondsToPace(avgRunPaceSec) : "—"} />
+          <Metric label="FC média (corrida)" value={avgRunHr ? avgRunHr.toFixed(0) : "—"} hint="bpm" />
+          <Metric label="Calorias treino" value={totalCalories ? `${Math.round(totalCalories)}` : "—"} />
+          <Metric label="Treinos manuais" value={trainingsCount} hint="registro próprio" />
+        </div>
+      )}
+
       <Card className="mb-5">
         <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-base">Status da semana</CardTitle>
