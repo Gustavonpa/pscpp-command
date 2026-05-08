@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChevronLeft, ChevronRight, Plus, BookOpen, AlertTriangle, ClipboardCheck } from "lucide-react";
 import { startOfWeek, endOfWeek, fmtDate, fmtWeekLabel, addDays } from "@/lib/week";
 import { parseDurationToHours } from "@/lib/garmin";
+import { classifyTraining, paceToSeconds, secondsToPace } from "@/lib/garmin-training";
 
 export const Route = createFileRoute("/")({
   head: () => ({
