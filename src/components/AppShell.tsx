@@ -12,6 +12,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     { to: "/study", label: "Estudo", icon: BookOpen },
     { to: "/review", label: "Revisão", icon: CalendarRange },
     { to: "/garmin-sleep", label: "Sono", icon: Moon },
+    { to: "/garmin-trainings", label: "Treinos", icon: Activity },
     { to: "/import-garmin", label: "Importar", icon: Upload },
   ] as const;
 
