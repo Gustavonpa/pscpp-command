@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { fmtDate, startOfWeek } from "@/lib/week";
+import { fmtDate, startOfWeek, addDays } from "@/lib/week";
+import { classifyTraining } from "@/lib/garmin-training";
 
 export const Route = createFileRoute("/review")({
   head: () => ({ meta: [{ title: "Revisão semanal — PSCPP" }, { name: "description", content: "Revisão semanal: o que funcionou, o que travou e foco da próxima semana." }] }),
