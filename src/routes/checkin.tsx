@@ -123,6 +123,22 @@ function CheckinPage() {
             <Toggle label="Janta/marmita pronta" value={meal} onChange={setMeal} />
           </div>
 
+          {garminTrainings.length > 0 && (
+            <div className="rounded-md border border-success/30 bg-success/5 p-3 text-sm">
+              <div className="text-xs uppercase tracking-wider text-success mb-1.5">Treino Garmin encontrado neste dia</div>
+              <ul className="space-y-1">
+                {garminTrainings.map((t, i) => (
+                  <li key={i} className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                    <span className="font-medium">{t.activity_type ?? "—"}</span>
+                    {t.distance_km != null && <span>{t.distance_km.toFixed(2)} km</span>}
+                    {t.duration_minutes != null && <span>{t.duration_minutes.toFixed(0)} min</span>}
+                    {t.average_heart_rate != null && <span>FC {t.average_heart_rate}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <Field label="Observações">
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="O que pesou, o que ajudou…" />
           </Field>
