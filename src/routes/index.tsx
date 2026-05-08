@@ -109,9 +109,10 @@ function Dashboard() {
   const avgMood = moodVals.length ? moodVals.reduce((a, b) => a + b, 0) / moodVals.length : 0;
   const phoneAbuse = checkins.filter((c) => c.phone_before_block).length;
 
+  const effectiveTrainings = Math.max(trainingsCount, gTrainings.length);
   const score =
     (studyBlocks >= 5 ? 2 : studyBlocks >= 3 ? 1 : 0) +
-    (trainingsCount >= 3 ? 2 : trainingsCount >= 1 ? 1 : 0) +
+    (effectiveTrainings >= 3 ? 2 : effectiveTrainings >= 1 ? 1 : 0) +
     (wakeOnTime >= 5 ? 2 : wakeOnTime >= 3 ? 1 : 0) +
     (avgSleep >= 7 ? 2 : avgSleep >= 6.5 ? 1 : 0);
   const status =
