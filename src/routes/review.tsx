@@ -116,6 +116,8 @@ function ReviewPage() {
             </div>
             <Slider value={[rating]} min={0} max={10} step={1} onValueChange={(v) => setRating(v[0])} />
           </div>
+
+          <TrainingSummary rows={weekTrainings} weekStart={weekStart} />
           <div className="grid md:grid-cols-2 gap-4">
             <F label="O que funcionou"><Textarea rows={3} value={worked} onChange={(e) => setWorked(e.target.value)} /></F>
             <F label="O que travou"><Textarea rows={3} value={blocked} onChange={(e) => setBlocked(e.target.value)} /></F>
