@@ -44,6 +44,15 @@ type GarminSleep = {
   hrv_status: string | null;
   sleep_duration: string | null;
 };
+type GarminTraining = {
+  activity_date: string;
+  activity_type: string | null;
+  duration_minutes: number | null;
+  distance_km: number | null;
+  average_pace: string | null;
+  average_heart_rate: number | null;
+  calories: number | null;
+};
 
 function Dashboard() {
   const { user, loading } = useAuthGate();
