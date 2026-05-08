@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, ClipboardCheck, BookOpen, CalendarRange, LogOut, Target, Moon, Upload } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, BookOpen, CalendarRange, LogOut, Target, Moon, Upload, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
