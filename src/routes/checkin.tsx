@@ -18,6 +18,13 @@ export const Route = createFileRoute("/checkin")({
   component: CheckinPage,
 });
 
+type GarminTr = {
+  activity_type: string | null;
+  distance_km: number | null;
+  duration_minutes: number | null;
+  average_heart_rate: number | null;
+};
+
 function CheckinPage() {
   const { user, loading } = useAuthGate();
   const [date, setDate] = useState(fmtDate(new Date()));
@@ -32,15 +39,17 @@ function CheckinPage() {
   const [meal, setMeal] = useState(false);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [garminTrainings, setGarminTrainings] = useState<GarminTr[]>([]);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("*")
-        .eq("date", date)
-        .maybeSingle();
+      const [{ data }, { data: gt }] = await Promise.all([
+        supabase.from("daily_checkins").select("*").eq("date", date).maybeSingle(),
+        supabase.from("garmin_training_sessions")
+          .select("activity_type,distance_km,duration_minutes,average_heart_rate")
+          .eq("activity_date", date),
+      ]);
       if (data) {
         setWakeTime(data.wake_time?.slice(0, 5) ?? "06:15");
         setSleepHours(String(data.sleep_hours ?? "7"));
@@ -53,6 +62,7 @@ function CheckinPage() {
         setMeal(!!data.meal_ready);
         setNotes(data.notes ?? "");
       }
+      setGarminTrainings((gt ?? []) as GarminTr[]);
     })();
   }, [user, date]);
 
@@ -112,6 +122,22 @@ function CheckinPage() {
             <Toggle label="Usei celular antes do 1º bloco" value={phone} onChange={setPhone} warn />
             <Toggle label="Janta/marmita pronta" value={meal} onChange={setMeal} />
           </div>
+
+          {garminTrainings.length > 0 && (
+            <div className="rounded-md border border-success/30 bg-success/5 p-3 text-sm">
+              <div className="text-xs uppercase tracking-wider text-success mb-1.5">Treino Garmin encontrado neste dia</div>
+              <ul className="space-y-1">
+                {garminTrainings.map((t, i) => (
+                  <li key={i} className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                    <span className="font-medium">{t.activity_type ?? "—"}</span>
+                    {t.distance_km != null && <span>{t.distance_km.toFixed(2)} km</span>}
+                    {t.duration_minutes != null && <span>{t.duration_minutes.toFixed(0)} min</span>}
+                    {t.average_heart_rate != null && <span>FC {t.average_heart_rate}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <Field label="Observações">
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="O que pesou, o que ajudou…" />

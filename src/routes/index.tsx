@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChevronLeft, ChevronRight, Plus, BookOpen, AlertTriangle, ClipboardCheck } from "lucide-react";
 import { startOfWeek, endOfWeek, fmtDate, fmtWeekLabel, addDays } from "@/lib/week";
 import { parseDurationToHours } from "@/lib/garmin";
+import { classifyTraining, paceToSeconds, secondsToPace } from "@/lib/garmin-training";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,6 +44,15 @@ type GarminSleep = {
   hrv_status: string | null;
   sleep_duration: string | null;
 };
+type GarminTraining = {
+  activity_date: string;
+  activity_type: string | null;
+  duration_minutes: number | null;
+  distance_km: number | null;
+  average_pace: string | null;
+  average_heart_rate: number | null;
+  calories: number | null;
+};
 
 function Dashboard() {
   const { user, loading } = useAuthGate();
@@ -52,6 +62,7 @@ function Dashboard() {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [garmin, setGarmin] = useState<GarminSleep[]>([]);
   const [garminPrev, setGarminPrev] = useState<GarminSleep[]>([]);
+  const [gTrainings, setGTrainings] = useState<GarminTraining[]>([]);
 
   const start = useMemo(() => startOfWeek(weekRef), [weekRef]);
   const end = useMemo(() => endOfWeek(weekRef), [weekRef]);
@@ -65,19 +76,22 @@ function Dashboard() {
     const ps = fmtDate(prevStart);
     const pe = fmtDate(prevEnd);
     const garminCols = "date,sleep_score,resting_heart_rate,body_battery,hrv_status,sleep_duration";
+    const trCols = "activity_date,activity_type,duration_minutes,distance_km,average_pace,average_heart_rate,calories";
     (async () => {
-      const [c, st, tr, g, gp] = await Promise.all([
+      const [c, st, tr, g, gp, gt] = await Promise.all([
         supabase.from("daily_checkins").select("*").gte("date", s).lte("date", e),
         supabase.from("study_sessions").select("date,duration_minutes").gte("date", s).lte("date", e),
         supabase.from("training_sessions").select("date,is_long_run").gte("date", s).lte("date", e),
         supabase.from("garmin_sleep_metrics").select(garminCols).gte("date", s).lte("date", e),
         supabase.from("garmin_sleep_metrics").select(garminCols).gte("date", ps).lte("date", pe),
+        supabase.from("garmin_training_sessions").select(trCols).gte("activity_date", s).lte("activity_date", e),
       ]);
       setCheckins((c.data ?? []) as Checkin[]);
       setStudies((st.data ?? []) as Study[]);
       setTrainings((tr.data ?? []) as Training[]);
       setGarmin((g.data ?? []) as GarminSleep[]);
       setGarminPrev((gp.data ?? []) as GarminSleep[]);
+      setGTrainings((gt.data ?? []) as GarminTraining[]);
     })();
   }, [user, start, end, prevStart, prevEnd]);
 
@@ -95,9 +109,10 @@ function Dashboard() {
   const avgMood = moodVals.length ? moodVals.reduce((a, b) => a + b, 0) / moodVals.length : 0;
   const phoneAbuse = checkins.filter((c) => c.phone_before_block).length;
 
+  const effectiveTrainings = Math.max(trainingsCount, gTrainings.length);
   const score =
     (studyBlocks >= 5 ? 2 : studyBlocks >= 3 ? 1 : 0) +
-    (trainingsCount >= 3 ? 2 : trainingsCount >= 1 ? 1 : 0) +
+    (effectiveTrainings >= 3 ? 2 : effectiveTrainings >= 1 ? 1 : 0) +
     (wakeOnTime >= 5 ? 2 : wakeOnTime >= 3 ? 1 : 0) +
     (avgSleep >= 7 ? 2 : avgSleep >= 6.5 ? 1 : 0);
   const status =
@@ -122,11 +137,41 @@ function Dashboard() {
   const prevRhrVals = garminPrev.map((g) => g.resting_heart_rate).filter((v): v is number => v !== null);
   const prevAvgRhr = prevRhrVals.length ? prevRhrVals.reduce((a, b) => a + b, 0) / prevRhrVals.length : 0;
 
+  // Garmin training aggregates
+  const trWithCat = gTrainings.map((t) => ({ ...t, cat: classifyTraining(t.activity_type) }));
+  const gTrCount = trWithCat.length;
+  const runs = trWithCat.filter((t) => t.cat === "corrida");
+  const strength = trWithCat.filter((t) => t.cat === "fortalecimento");
+  const walks = trWithCat.filter((t) => t.cat === "caminhada");
+  const totalDistKm = runs.reduce((a, t) => a + (t.distance_km ?? 0), 0);
+  const totalTrainMin = trWithCat.reduce((a, t) => a + (t.duration_minutes ?? 0), 0);
+  const totalCalories = trWithCat.reduce((a, t) => a + (t.calories ?? 0), 0);
+  const longRun = runs.reduce<typeof runs[number] | null>((acc, r) => ((r.distance_km ?? 0) > (acc?.distance_km ?? 0) ? r : acc), null);
+  const runHr = runs.map((r) => r.average_heart_rate).filter((v): v is number => v !== null);
+  const avgRunHr = runHr.length ? runHr.reduce((a, b) => a + b, 0) / runHr.length : 0;
+  const runPaces = runs.map((r) => paceToSeconds(r.average_pace)).filter((v): v is number => v !== null);
+  const avgRunPaceSec = runPaces.length ? runPaces.reduce((a, b) => a + b, 0) / runPaces.length : 0;
+
+  // Cross sleep+training: intense training after low-sleep night
+  const intenseAfterPoorSleep = trWithCat.some((t) => {
+    if ((t.duration_minutes ?? 0) < 40) return false;
+    const prevDay = fmtDate(addDays(new Date(t.activity_date), -1));
+    const sl = garmin.find((g) => g.date === prevDay);
+    const slHours = sl ? parseDurationToHours(sl.sleep_duration) : null;
+    return (slHours !== null && slHours < 6.5) || (sl?.sleep_score !== null && sl?.sleep_score !== undefined && sl.sleep_score < 65);
+  });
+
   const alerts: string[] = [];
   if (studyBlocks < 3) alerts.push("Atenção à consistência: menos de 3 blocos de estudo na semana.");
   if (sleepValues.length > 0 && avgSleep < 6.5) alerts.push("Sono prejudicando performance: média abaixo de 6h30.");
   if (phoneAbuse > 2) alerts.push("Manhã sendo sequestrada: celular antes do primeiro bloco em mais de 2 dias.");
-  if (trainingsCount === 0) alerts.push("Corpo fora do plano: nenhum treino registrado.");
+  if (gTrCount === 0) alerts.push("Corpo fora do plano: nenhum treino registrado.");
+  else if (gTrCount < 3) alerts.push("Volume de treino abaixo do plano: menos de 3 treinos na semana.");
+  if (gTrCount > 0 && runs.length === 0) alerts.push("Nenhuma corrida registrada. Atenção à preparação para a meia.");
+  if (gTrCount > 0 && strength.length === 0) alerts.push("Fortalecimento ausente. Risco maior de lesão.");
+  if (runs.length > 0 && totalDistKm < 15) alerts.push("Quilometragem semanal baixa para evolução na meia.");
+  if (longRun && (longRun.distance_km ?? 0) < 8) alerts.push("Longão ainda abaixo do planejado para a meia.");
+  if (intenseAfterPoorSleep) alerts.push("Treino realizado com sono baixo. Atenção à recuperação.");
   if (avgScore > 0 && avgScore < 70) alerts.push("Seu sono está abaixo do ideal para sustentar estudo, treino e O2con.");
   if (shortNights >= 2) alerts.push("Você teve noites curtas demais. Isso pode prejudicar sua consistência no PSCPP.");
   if (prevAvgRhr > 0 && avgRhr > prevAvgRhr) alerts.push("FC de repouso subiu vs. semana anterior: possível sinal de fadiga.");
@@ -196,6 +241,28 @@ function Dashboard() {
           <Metric label="Melhor noite" value={bestNight?.sleep_score ? `${bestNight.sleep_score}` : "—"} hint={bestNight?.date.slice(5) ?? ""} tone="success" />
           <Metric label="Pior noite" value={worstNight?.sleep_score ? `${worstNight.sleep_score}` : "—"} hint={worstNight?.date.slice(5) ?? ""} tone="muted" />
           <Metric label="VFC predominante" value={hrvDominant} />
+        </div>
+      )}
+
+      {gTrCount > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <Metric label="Treinos (Garmin)" value={gTrCount} progress={(gTrCount / 4) * 100} />
+          <Metric label="Corridas" value={runs.length} progress={(runs.length / 3) * 100} />
+          <Metric label="Fortalecimentos" value={strength.length} progress={(strength.length / 2) * 100} />
+          <Metric label="Caminhadas" value={walks.length} />
+          <Metric label="Distância corrida" value={`${totalDistKm.toFixed(1)} km`} />
+          <Metric label="Tempo total treino" value={`${(totalTrainMin / 60).toFixed(1)}h`} hint={`${Math.round(totalTrainMin)} min`} />
+          <Metric
+            label="Longão"
+            value={longRun?.distance_km ? `${longRun.distance_km.toFixed(1)} km` : "Pendente"}
+            hint={longRun?.activity_date.slice(5) ?? ""}
+            tone={longRun?.distance_km && longRun.distance_km >= 8 ? "success" : "muted"}
+          />
+          <Metric label="Maior corrida" value={longRun?.distance_km ? `${longRun.distance_km.toFixed(1)} km` : "—"} />
+          <Metric label="Pace médio" value={avgRunPaceSec ? secondsToPace(avgRunPaceSec) : "—"} />
+          <Metric label="FC média (corrida)" value={avgRunHr ? avgRunHr.toFixed(0) : "—"} hint="bpm" />
+          <Metric label="Calorias treino" value={totalCalories ? `${Math.round(totalCalories)}` : "—"} />
+          <Metric label="Treinos manuais" value={trainingsCount} hint="registro próprio" />
         </div>
       )}
 

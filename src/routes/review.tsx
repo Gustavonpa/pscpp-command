@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
-import { fmtDate, startOfWeek } from "@/lib/week";
+import { fmtDate, startOfWeek, addDays } from "@/lib/week";
+import { classifyTraining } from "@/lib/garmin-training";
 
 export const Route = createFileRoute("/review")({
   head: () => ({ meta: [{ title: "Revisão semanal — PSCPP" }, { name: "description", content: "Revisão semanal: o que funcionou, o que travou e foco da próxima semana." }] }),
@@ -29,6 +30,20 @@ function ReviewPage() {
   const [relationship, setRelationship] = useState("");
   const [focus, setFocus] = useState("");
   const [saving, setSaving] = useState(false);
+  const [weekTrainings, setWeekTrainings] = useState<{ activity_type: string | null; activity_date: string; distance_km: number | null; duration_minutes: number | null }[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    const ws = weekStart;
+    const we = fmtDate(addDays(new Date(weekStart), 6));
+    (async () => {
+      const { data } = await supabase
+        .from("garmin_training_sessions")
+        .select("activity_type,activity_date,distance_km,duration_minutes")
+        .gte("activity_date", ws).lte("activity_date", we);
+      setWeekTrainings(data ?? []);
+    })();
+  }, [user, weekStart]);
 
   useEffect(() => {
     if (!user) return;
@@ -101,6 +116,8 @@ function ReviewPage() {
             </div>
             <Slider value={[rating]} min={0} max={10} step={1} onValueChange={(v) => setRating(v[0])} />
           </div>
+
+          <TrainingSummary rows={weekTrainings} weekStart={weekStart} />
           <div className="grid md:grid-cols-2 gap-4">
             <F label="O que funcionou"><Textarea rows={3} value={worked} onChange={(e) => setWorked(e.target.value)} /></F>
             <F label="O que travou"><Textarea rows={3} value={blocked} onChange={(e) => setBlocked(e.target.value)} /></F>
@@ -123,4 +140,54 @@ function ReviewPage() {
 
 function F({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><Label className="text-xs uppercase tracking-wider text-muted-foreground">{label}</Label>{children}</div>;
+}
+
+type TR = { activity_type: string | null; activity_date: string; distance_km: number | null; duration_minutes: number | null };
+
+function TrainingSummary({ rows, weekStart }: { rows: TR[]; weekStart: string }) {
+  if (!rows.length) {
+    return (
+      <div className="rounded-md border border-border bg-card/40 p-3 text-xs text-muted-foreground">
+        Nenhum treino do Garmin importado nesta semana.
+      </div>
+    );
+  }
+  const cats = rows.map((r) => ({ ...r, cat: classifyTraining(r.activity_type) }));
+  const runs = cats.filter((r) => r.cat === "corrida");
+  const strength = cats.filter((r) => r.cat === "fortalecimento");
+  const totalDist = runs.reduce((a, r) => a + (r.distance_km ?? 0), 0);
+  const longRun = runs.reduce<TR | null>((acc, r) => ((r.distance_km ?? 0) > (acc?.distance_km ?? 0) ? r : acc), null);
+  const weekendDates = [fmtDate(addDays(new Date(weekStart), 5)), fmtDate(addDays(new Date(weekStart), 6))];
+  const ranOnWeekend = runs.some((r) => weekendDates.includes(r.activity_date));
+  const won = cats.length >= 3 && runs.length >= 2 && strength.length >= 1 && (!ranOnWeekend || !!longRun);
+  const obs = won
+    ? "Aderência ao plano: semana vencida no treino."
+    : `Aderência abaixo do plano. Faltam: ${[
+        cats.length < 3 ? "3 treinos" : null,
+        runs.length < 2 ? "2 corridas" : null,
+        strength.length < 1 ? "1 fortalecimento" : null,
+        ranOnWeekend && !longRun ? "longão registrado" : null,
+      ].filter(Boolean).join(" · ")}.`;
+  return (
+    <div className={`rounded-md border p-3 text-sm ${won ? "border-success/30 bg-success/5" : "border-warning/30 bg-warning/5"}`}>
+      <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Resumo de treinos da semana</div>
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+        <Stat l="Treinos" v={cats.length} />
+        <Stat l="Corridas" v={runs.length} />
+        <Stat l="Fortalec." v={strength.length} />
+        <Stat l="Distância" v={`${totalDist.toFixed(1)} km`} />
+        <Stat l="Longão" v={longRun?.distance_km ? `${longRun.distance_km.toFixed(1)} km` : "—"} />
+      </div>
+      <div className={`mt-2 text-xs ${won ? "text-success" : "text-warning"}`}>{obs}</div>
+    </div>
+  );
+}
+
+function Stat({ l, v }: { l: string; v: string | number }) {
+  return (
+    <div className="rounded border border-border bg-card/40 p-2">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{l}</div>
+      <div className="text-sm font-semibold">{v}</div>
+    </div>
+  );
 }

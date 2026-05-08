@@ -122,6 +122,99 @@ export type Database = {
         }
         Relationships: []
       }
+      garmin_training_sessions: {
+        Row: {
+          activity_date: string
+          activity_datetime: string | null
+          activity_name: string | null
+          activity_type: string | null
+          aerobic_training_effect: number | null
+          anaerobic_training_effect: number | null
+          average_cadence: number | null
+          average_heart_rate: number | null
+          average_pace: string | null
+          average_power: number | null
+          average_speed_kmh: number | null
+          calories: number | null
+          created_at: string
+          distance_km: number | null
+          duration_minutes: number | null
+          elevation_gain_meters: number | null
+          elevation_loss_meters: number | null
+          id: string
+          max_cadence: number | null
+          max_heart_rate: number | null
+          max_power: number | null
+          notes: string | null
+          perceived_effort: number | null
+          raw_data: Json | null
+          source: string
+          training_effect: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_date: string
+          activity_datetime?: string | null
+          activity_name?: string | null
+          activity_type?: string | null
+          aerobic_training_effect?: number | null
+          anaerobic_training_effect?: number | null
+          average_cadence?: number | null
+          average_heart_rate?: number | null
+          average_pace?: string | null
+          average_power?: number | null
+          average_speed_kmh?: number | null
+          calories?: number | null
+          created_at?: string
+          distance_km?: number | null
+          duration_minutes?: number | null
+          elevation_gain_meters?: number | null
+          elevation_loss_meters?: number | null
+          id?: string
+          max_cadence?: number | null
+          max_heart_rate?: number | null
+          max_power?: number | null
+          notes?: string | null
+          perceived_effort?: number | null
+          raw_data?: Json | null
+          source?: string
+          training_effect?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_datetime?: string | null
+          activity_name?: string | null
+          activity_type?: string | null
+          aerobic_training_effect?: number | null
+          anaerobic_training_effect?: number | null
+          average_cadence?: number | null
+          average_heart_rate?: number | null
+          average_pace?: string | null
+          average_power?: number | null
+          average_speed_kmh?: number | null
+          calories?: number | null
+          created_at?: string
+          distance_km?: number | null
+          duration_minutes?: number | null
+          elevation_gain_meters?: number | null
+          elevation_loss_meters?: number | null
+          id?: string
+          max_cadence?: number | null
+          max_heart_rate?: number | null
+          max_power?: number | null
+          notes?: string | null
+          perceived_effort?: number | null
+          raw_data?: Json | null
+          source?: string
+          training_effect?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           correct: number | null
