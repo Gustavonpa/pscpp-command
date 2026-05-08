@@ -62,6 +62,7 @@ function Dashboard() {
   const [trainings, setTrainings] = useState<Training[]>([]);
   const [garmin, setGarmin] = useState<GarminSleep[]>([]);
   const [garminPrev, setGarminPrev] = useState<GarminSleep[]>([]);
+  const [gTrainings, setGTrainings] = useState<GarminTraining[]>([]);
 
   const start = useMemo(() => startOfWeek(weekRef), [weekRef]);
   const end = useMemo(() => endOfWeek(weekRef), [weekRef]);
@@ -75,19 +76,22 @@ function Dashboard() {
     const ps = fmtDate(prevStart);
     const pe = fmtDate(prevEnd);
     const garminCols = "date,sleep_score,resting_heart_rate,body_battery,hrv_status,sleep_duration";
+    const trCols = "activity_date,activity_type,duration_minutes,distance_km,average_pace,average_heart_rate,calories";
     (async () => {
-      const [c, st, tr, g, gp] = await Promise.all([
+      const [c, st, tr, g, gp, gt] = await Promise.all([
         supabase.from("daily_checkins").select("*").gte("date", s).lte("date", e),
         supabase.from("study_sessions").select("date,duration_minutes").gte("date", s).lte("date", e),
         supabase.from("training_sessions").select("date,is_long_run").gte("date", s).lte("date", e),
         supabase.from("garmin_sleep_metrics").select(garminCols).gte("date", s).lte("date", e),
         supabase.from("garmin_sleep_metrics").select(garminCols).gte("date", ps).lte("date", pe),
+        supabase.from("garmin_training_sessions").select(trCols).gte("activity_date", s).lte("activity_date", e),
       ]);
       setCheckins((c.data ?? []) as Checkin[]);
       setStudies((st.data ?? []) as Study[]);
       setTrainings((tr.data ?? []) as Training[]);
       setGarmin((g.data ?? []) as GarminSleep[]);
       setGarminPrev((gp.data ?? []) as GarminSleep[]);
+      setGTrainings((gt.data ?? []) as GarminTraining[]);
     })();
   }, [user, start, end, prevStart, prevEnd]);
 
