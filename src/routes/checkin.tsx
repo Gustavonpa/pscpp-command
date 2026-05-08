@@ -18,6 +18,13 @@ export const Route = createFileRoute("/checkin")({
   component: CheckinPage,
 });
 
+type GarminTr = {
+  activity_type: string | null;
+  distance_km: number | null;
+  duration_minutes: number | null;
+  average_heart_rate: number | null;
+};
+
 function CheckinPage() {
   const { user, loading } = useAuthGate();
   const [date, setDate] = useState(fmtDate(new Date()));
@@ -32,15 +39,17 @@ function CheckinPage() {
   const [meal, setMeal] = useState(false);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [garminTrainings, setGarminTrainings] = useState<GarminTr[]>([]);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
-        .from("daily_checkins")
-        .select("*")
-        .eq("date", date)
-        .maybeSingle();
+      const [{ data }, { data: gt }] = await Promise.all([
+        supabase.from("daily_checkins").select("*").eq("date", date).maybeSingle(),
+        supabase.from("garmin_training_sessions")
+          .select("activity_type,distance_km,duration_minutes,average_heart_rate")
+          .eq("activity_date", date),
+      ]);
       if (data) {
         setWakeTime(data.wake_time?.slice(0, 5) ?? "06:15");
         setSleepHours(String(data.sleep_hours ?? "7"));
@@ -53,6 +62,7 @@ function CheckinPage() {
         setMeal(!!data.meal_ready);
         setNotes(data.notes ?? "");
       }
+      setGarminTrainings((gt ?? []) as GarminTr[]);
     })();
   }, [user, date]);
 
