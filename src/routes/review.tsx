@@ -30,6 +30,20 @@ function ReviewPage() {
   const [relationship, setRelationship] = useState("");
   const [focus, setFocus] = useState("");
   const [saving, setSaving] = useState(false);
+  const [weekTrainings, setWeekTrainings] = useState<{ activity_type: string | null; activity_date: string; distance_km: number | null; duration_minutes: number | null }[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    const ws = weekStart;
+    const we = fmtDate(addDays(new Date(weekStart), 6));
+    (async () => {
+      const { data } = await supabase
+        .from("garmin_training_sessions")
+        .select("activity_type,activity_date,distance_km,duration_minutes")
+        .gte("activity_date", ws).lte("activity_date", we);
+      setWeekTrainings(data ?? []);
+    })();
+  }, [user, weekStart]);
 
   useEffect(() => {
     if (!user) return;
