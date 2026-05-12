@@ -222,9 +222,13 @@ export type Database = {
           date: string
           difficulty: string | null
           duration_minutes: number
+          errors_to_review: string | null
           id: string
+          mastery_level: number | null
           next_action: string | null
           questions: number | null
+          source: string | null
+          specific_content: string | null
           subject: string
           type: string
           user_id: string
@@ -236,9 +240,13 @@ export type Database = {
           date: string
           difficulty?: string | null
           duration_minutes: number
+          errors_to_review?: string | null
           id?: string
+          mastery_level?: number | null
           next_action?: string | null
           questions?: number | null
+          source?: string | null
+          specific_content?: string | null
           subject: string
           type: string
           user_id: string
@@ -250,9 +258,13 @@ export type Database = {
           date?: string
           difficulty?: string | null
           duration_minutes?: number
+          errors_to_review?: string | null
           id?: string
+          mastery_level?: number | null
           next_action?: string | null
           questions?: number | null
+          source?: string | null
+          specific_content?: string | null
           subject?: string
           type?: string
           user_id?: string
@@ -293,6 +305,45 @@ export type Database = {
           notes?: string | null
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_plan_items: {
+        Row: {
+          category: string
+          created_at: string
+          day_of_week: number
+          detail: string | null
+          id: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          day_of_week: number
+          detail?: string | null
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          day_of_week?: number
+          detail?: string | null
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          week_start?: string
         }
         Relationships: []
       }
