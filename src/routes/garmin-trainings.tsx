@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { fmtDate, addDays, startOfWeek } from "@/lib/week";
-import { classifyTraining, paceToSeconds, secondsToPace, type TrainingCategory } from "@/lib/garmin-training";
+import { classifyTraining, paceToSeconds, secondsToPace, formatDisplayDistance, type TrainingCategory } from "@/lib/garmin-training";
 
 export const Route = createFileRoute("/garmin-trainings")({
   head: () => ({ meta: [{ title: "Garmin Treinos — PSCPP" }, { name: "description", content: "Histórico de treinos importados do Garmin." }] }),
@@ -213,7 +213,7 @@ function GarminTrainings() {
                   <td className="p-2">{r.activity_type ?? "—"}</td>
                   <td className="p-2 text-primary">{classifyTraining(r.activity_type)}</td>
                   <td className="p-2 text-right">{r.duration_minutes?.toFixed(1) ?? "—"}</td>
-                  <td className="p-2 text-right">{r.distance_km != null ? `${r.distance_km.toFixed(2)} km` : "—"}</td>
+                  <td className="p-2 text-right">{formatDisplayDistance(r.distance_km, r.activity_type, r.activity_name)}</td>
                   <td className="p-2">{r.average_pace ?? "—"}</td>
                   <td className="p-2 text-right">{r.average_heart_rate ?? "—"}</td>
                   <td className="p-2 text-right">{r.calories ?? "—"}</td>

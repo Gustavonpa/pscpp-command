@@ -13,7 +13,7 @@ import { AlertTriangle, CheckCircle2, Upload } from "lucide-react";
 import { GARMIN_COLUMN_MAP, REQUIRED_COLUMNS, mapRow, type GarminSleepRow } from "@/lib/garmin";
 import {
   detectFields, mapTrainingRow, REQUIRED_TRAINING_FIELDS, classifyTraining,
-  normalizeDistanceWithMeta,
+  normalizeDistanceWithMeta, formatDisplayDistance,
   type TrainingRow,
 } from "@/lib/garmin-training";
 
@@ -270,7 +270,7 @@ function TrainingImporter({ userId }: { userId: string }) {
                         <td className="p-2 text-right">{r.duration_minutes?.toFixed(1) ?? "—"}</td>
                         <td className="p-2 text-right text-muted-foreground">{meta.original ?? "—"}</td>
                         <td className={`p-2 text-right ${meta.corrected ? "text-amber-500 font-medium" : ""}`}>
-                          {r.distance_km != null ? `${r.distance_km.toFixed(2)} km` : "—"}
+                          {formatDisplayDistance(r.distance_km, r.activity_type, r.activity_name)}
                         </td>
                         <td className="p-2 text-xs">
                           {meta.warning ? <span className="text-destructive">{meta.warning}</span>

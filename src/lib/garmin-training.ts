@@ -184,6 +184,13 @@ export function normalizeDistanceToKm(
   const activityType = String(rawRow["activity_type"] ?? rawRow["Tipo"] ?? rawRow["Activity Type"] ?? "").toLowerCase();
   const activityName = String(rawRow["activity_name"] ?? rawRow["Título"] ?? rawRow["Titulo"] ?? rawRow["Nome"] ?? "").toLowerCase();
   const isRunning = /(running|\brun\b|corrida|trail)/.test(activityType) || /corrida/.test(activityName);
+  const isSwimming = /(nata[cç][aã]o|swim)/.test(activityType) || /nata[cç][aã]o/.test(activityName);
+
+  // Swimming: Garmin reports meters; values > 10 are meters and converted to km.
+  if (isSwimming) {
+    if (n > 10) n = n / 1000;
+    return n;
+  }
 
   // Absurdly high for a running activity → likely scaled by 100 (e.g. 600 → 6.00)
   if (isRunning && n > 100 && n < 100000) {
@@ -202,6 +209,18 @@ export function normalizeDistanceToKm(
   }
 
   return n;
+}
+
+export function formatDisplayDistance(distanceKm: number | null | undefined, activityType?: string | null, activityName?: string | null): string {
+  if (distanceKm == null) return "—";
+  const t = (activityType ?? "").toLowerCase();
+  const n = (activityName ?? "").toLowerCase();
+  const isSwimming = /(nata[cç][aã]o|swim)/.test(t) || /nata[cç][aã]o/.test(n);
+  if (isSwimming) return `${Math.round(distanceKm * 1000)} m`;
+  const cat = classifyTraining(activityType);
+  if (cat === "corrida" || cat === "caminhada") return `${distanceKm.toFixed(2)} km`;
+  if (distanceKm < 1) return `${Math.round(distanceKm * 1000)} m`;
+  return `${distanceKm.toFixed(2)} km`;
 }
 
 export type DistanceNormalization = {
