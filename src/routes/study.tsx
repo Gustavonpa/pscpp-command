@@ -23,6 +23,7 @@ const TYPES = ["teoria", "exercício", "revisão", "simulado"];
 type Row = {
   id: string; date: string; subject: string; type: string;
   duration_minutes: number; questions: number; correct: number;
+  specific_content: string | null; mastery_level: number | null;
 };
 
 function StudyPage() {
@@ -36,13 +37,17 @@ function StudyPage() {
   const [wrong, setWrong] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [next, setNext] = useState("");
+  const [specificContent, setSpecificContent] = useState("");
+  const [mastery, setMastery] = useState("3");
+  const [source, setSource] = useState("");
+  const [errors, setErrors] = useState("");
   const [recent, setRecent] = useState<Row[]>([]);
   const [saving, setSaving] = useState(false);
 
   const refresh = async () => {
     const { data } = await supabase
       .from("study_sessions")
-      .select("id,date,subject,type,duration_minutes,questions,correct")
+      .select("id,date,subject,type,duration_minutes,questions,correct,specific_content,mastery_level")
       .order("date", { ascending: false })
       .limit(10);
     setRecent((data ?? []) as Row[]);
@@ -65,11 +70,16 @@ function StudyPage() {
       wrong: Number(wrong) || 0,
       difficulty: difficulty || null,
       next_action: next || null,
+      specific_content: specificContent || null,
+      mastery_level: Number(mastery) || null,
+      source: source || null,
+      errors_to_review: errors || null,
     });
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Estudo registrado");
     setQuestions(""); setCorrect(""); setWrong(""); setDifficulty(""); setNext("");
+    setSpecificContent(""); setSource(""); setErrors("");
     refresh();
   };
 
@@ -106,8 +116,25 @@ function StudyPage() {
               <F label="Acertos"><Input type="number" value={correct} onChange={(e) => setCorrect(e.target.value)} /></F>
               <F label="Erros"><Input type="number" value={wrong} onChange={(e) => setWrong(e.target.value)} /></F>
             </div>
+            <F label="Conteúdo específico estudado">
+              <Input value={specificContent} onChange={(e) => setSpecificContent(e.target.value)} placeholder="Ex: Frações, regra de três, vocabulário náutico" />
+            </F>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <F label="Domínio (1–5)">
+                <Select value={mastery} onValueChange={setMastery}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                </Select>
+              </F>
+              <F label="Fonte usada">
+                <Input value={source} onChange={(e) => setSource(e.target.value)} placeholder="Livro, app, vídeo…" />
+              </F>
+            </div>
             <F label="Principal dificuldade">
               <Textarea rows={2} value={difficulty} onChange={(e) => setDifficulty(e.target.value)} />
+            </F>
+            <F label="Erros para revisar">
+              <Textarea rows={2} value={errors} onChange={(e) => setErrors(e.target.value)} />
             </F>
             <F label="Próxima ação">
               <Textarea rows={2} value={next} onChange={(e) => setNext(e.target.value)} />
