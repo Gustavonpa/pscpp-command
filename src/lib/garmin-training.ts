@@ -278,13 +278,18 @@ export function mapTrainingRow(raw: Record<string, unknown>, headers: Partial<Re
   const date = dateRaw ? parseDate(dateRaw) : null;
   if (!date) return null;
   const timeRaw = get("activity_time");
+  const activity_name = get("activity_name");
+  const activity_type = get("activity_type");
+  const distanceCol = headers["distance_km"] ?? "distance";
+  const distanceRaw = get("distance_km");
+  const distanceCtx = { ...raw, activity_name, activity_type };
   return {
     activity_date: date,
     activity_datetime: combineDateTime(dateRaw, timeRaw),
-    activity_name: get("activity_name"),
-    activity_type: get("activity_type"),
+    activity_name,
+    activity_type,
     duration_minutes: parseDurationMinutes(get("duration_minutes")),
-    distance_km: parseDistanceKm(get("distance_km")),
+    distance_km: normalizeDistanceToKm(distanceRaw, distanceCtx, distanceCol),
     average_pace: get("average_pace"),
     average_speed_kmh: parseNum(get("average_speed_kmh")),
     average_heart_rate: parseNum(get("average_heart_rate")),
@@ -299,7 +304,7 @@ export function mapTrainingRow(raw: Record<string, unknown>, headers: Partial<Re
     anaerobic_training_effect: parseNum(get("anaerobic_training_effect")),
     average_power: parseNum(get("average_power")),
     max_power: parseNum(get("max_power")),
-    raw_data: raw,
+    raw_data: { ...raw, _original_distance: distanceRaw, _distance_column: distanceCol },
   };
 }
 
