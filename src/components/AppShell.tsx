@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, ClipboardCheck, BookOpen, CalendarRange, LogOut, Target, Moon, Upload, Activity } from "lucide-react";
+import { LayoutDashboard, ClipboardCheck, BookOpen, CalendarRange, LogOut, Target, Moon, Upload, Activity, ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const links = [
     { to: "/", label: "Dashboard", icon: LayoutDashboard },
     { to: "/checkin", label: "Check-in", icon: ClipboardCheck },
+    { to: "/plan", label: "Plano", icon: ListChecks },
     { to: "/study", label: "Estudo", icon: BookOpen },
     { to: "/review", label: "Revisão", icon: CalendarRange },
     { to: "/garmin-sleep", label: "Sono", icon: Moon },
