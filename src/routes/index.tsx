@@ -254,11 +254,11 @@ function Dashboard() {
           <Metric label="Tempo total treino" value={`${(totalTrainMin / 60).toFixed(1)}h`} hint={`${Math.round(totalTrainMin)} min`} />
           <Metric
             label="Longão"
-            value={longRun?.distance_km ? `${longRun.distance_km.toFixed(1)} km` : "Pendente"}
-            hint={longRun?.activity_date.slice(5) ?? ""}
+            value={longRun?.distance_km ? `${longRun.distance_km.toFixed(2)} km` : "Pendente"}
+            hint={`Total semana: ${totalDistKm.toFixed(2)} km`}
             tone={longRun?.distance_km && longRun.distance_km >= 8 ? "success" : "muted"}
           />
-          <Metric label="Maior corrida" value={longRun?.distance_km ? `${longRun.distance_km.toFixed(1)} km` : "—"} />
+          <Metric label="Maior corrida" value={longRun?.distance_km ? `${longRun.distance_km.toFixed(2)} km` : "—"} />
           <Metric label="Pace médio" value={avgRunPaceSec ? secondsToPace(avgRunPaceSec) : "—"} />
           <Metric label="FC média (corrida)" value={avgRunHr ? avgRunHr.toFixed(0) : "—"} hint="bpm" />
           <Metric label="Calorias treino" value={totalCalories ? `${Math.round(totalCalories)}` : "—"} />
