@@ -13,7 +13,7 @@ import { AlertTriangle, CheckCircle2, Upload } from "lucide-react";
 import { GARMIN_COLUMN_MAP, REQUIRED_COLUMNS, mapRow, type GarminSleepRow } from "@/lib/garmin";
 import {
   detectFields, mapTrainingRow, REQUIRED_TRAINING_FIELDS, classifyTraining,
-  normalizeDistanceWithMeta,
+  normalizeDistanceWithMeta, formatDisplayDistance,
   type TrainingRow,
 } from "@/lib/garmin-training";
 
