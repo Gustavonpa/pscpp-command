@@ -270,7 +270,7 @@ function TrainingImporter({ userId }: { userId: string }) {
                         <td className="p-2 text-right">{r.duration_minutes?.toFixed(1) ?? "—"}</td>
                         <td className="p-2 text-right text-muted-foreground">{meta.original ?? "—"}</td>
                         <td className={`p-2 text-right ${meta.corrected ? "text-amber-500 font-medium" : ""}`}>
-                          {r.distance_km != null ? `${r.distance_km.toFixed(2)} km` : "—"}
+                          {formatDisplayDistance(r.distance_km, r.activity_type, r.activity_name)}
                         </td>
                         <td className="p-2 text-xs">
                           {meta.warning ? <span className="text-destructive">{meta.warning}</span>
