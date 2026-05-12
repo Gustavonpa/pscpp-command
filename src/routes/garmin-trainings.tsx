@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { fmtDate, addDays, startOfWeek } from "@/lib/week";
-import { classifyTraining, paceToSeconds, secondsToPace, type TrainingCategory } from "@/lib/garmin-training";
+import { classifyTraining, paceToSeconds, secondsToPace, formatDisplayDistance, type TrainingCategory } from "@/lib/garmin-training";
 
 export const Route = createFileRoute("/garmin-trainings")({
   head: () => ({ meta: [{ title: "Garmin Treinos — PSCPP" }, { name: "description", content: "Histórico de treinos importados do Garmin." }] }),
