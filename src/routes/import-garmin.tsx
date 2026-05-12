@@ -249,21 +249,39 @@ function TrainingImporter({ userId }: { userId: string }) {
               <table className="w-full text-xs">
                 <thead className="bg-muted/40 text-muted-foreground"><tr>
                   <th className="text-left p-2">Data</th><th className="text-left p-2">Tipo</th><th className="text-left p-2">Categoria</th>
-                  <th className="text-right p-2">Dur (min)</th><th className="text-right p-2">Dist (km)</th>
+                  <th className="text-right p-2">Dur (min)</th>
+                  <th className="text-right p-2">Dist orig.</th>
+                  <th className="text-right p-2">Dist (km)</th>
+                  <th className="text-left p-2">Alerta</th>
                   <th className="text-right p-2">FC méd</th><th className="text-right p-2">Cal</th>
                 </tr></thead>
                 <tbody>
-                  {rows.slice(0, 15).map((r, i) => (
-                    <tr key={i} className="border-t border-border">
-                      <td className="p-2 font-medium">{r.activity_date}</td>
-                      <td className="p-2">{r.activity_type ?? "—"}</td>
-                      <td className="p-2 text-primary">{classifyTraining(r.activity_type)}</td>
-                      <td className="p-2 text-right">{r.duration_minutes?.toFixed(1) ?? "—"}</td>
-                      <td className="p-2 text-right">{r.distance_km?.toFixed(2) ?? "—"}</td>
-                      <td className="p-2 text-right">{r.average_heart_rate ?? "—"}</td>
-                      <td className="p-2 text-right">{r.calories ?? "—"}</td>
-                    </tr>
-                  ))}
+                  {rows.slice(0, 15).map((r, i) => {
+                    const meta = normalizeDistanceWithMeta(
+                      (r.raw_data as Record<string, unknown>)?._original_distance,
+                      { ...(r.raw_data as Record<string, unknown>), activity_name: r.activity_name, activity_type: r.activity_type },
+                      String((r.raw_data as Record<string, unknown>)?._distance_column ?? "distance"),
+                    );
+                    return (
+                      <tr key={i} className="border-t border-border">
+                        <td className="p-2 font-medium">{r.activity_date}</td>
+                        <td className="p-2">{r.activity_type ?? "—"}</td>
+                        <td className="p-2 text-primary">{classifyTraining(r.activity_type)}</td>
+                        <td className="p-2 text-right">{r.duration_minutes?.toFixed(1) ?? "—"}</td>
+                        <td className="p-2 text-right text-muted-foreground">{meta.original ?? "—"}</td>
+                        <td className={`p-2 text-right ${meta.corrected ? "text-amber-500 font-medium" : ""}`}>
+                          {r.distance_km != null ? `${r.distance_km.toFixed(2)} km` : "—"}
+                        </td>
+                        <td className="p-2 text-xs">
+                          {meta.warning ? <span className="text-destructive">{meta.warning}</span>
+                            : meta.corrected ? <span className="text-amber-500">Correção automática aplicada</span>
+                            : ""}
+                        </td>
+                        <td className="p-2 text-right">{r.average_heart_rate ?? "—"}</td>
+                        <td className="p-2 text-right">{r.calories ?? "—"}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               {rows.length > 15 && <div className="p-2 text-center text-xs text-muted-foreground border-t border-border">+ {rows.length - 15} linhas</div>}
