@@ -250,7 +250,7 @@ function Dashboard() {
           <Metric label="Corridas" value={runs.length} progress={(runs.length / 3) * 100} />
           <Metric label="Fortalecimentos" value={strength.length} progress={(strength.length / 2) * 100} />
           <Metric label="Caminhadas" value={walks.length} />
-          <Metric label="Distância corrida" value={`${totalDistKm.toFixed(1)} km`} />
+          <Metric label="Distância corrida" value={`${totalDistKm.toFixed(2)} km`} />
           <Metric label="Tempo total treino" value={`${(totalTrainMin / 60).toFixed(1)}h`} hint={`${Math.round(totalTrainMin)} min`} />
           <Metric
             label="Longão"
