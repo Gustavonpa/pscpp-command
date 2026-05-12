@@ -122,14 +122,123 @@ export function parseDurationMinutes(input: unknown): number | null {
 }
 
 export function parseDistanceKm(input: unknown): number | null {
-  if (input === null || input === undefined) return null;
-  const s = String(input).trim().toLowerCase();
-  if (!s || s === "--" || s === "-") return null;
-  const num = parseNum(s);
-  if (num === null) return null;
-  if (/\bm\b/.test(s) && !/km/.test(s)) return num / 1000; // meters
-  if (num > 1000) return num / 1000; // assume meters if huge
-  return num;
+  // Backwards-compat shim: delegate to normalizeDistanceToKm without context.
+  return normalizeDistanceToKm(input, {}, "distance");
+}
+
+/**
+ * Robust distance parser that always returns kilometers.
+ * - Handles Brazilian comma decimals ("6,00" -> 6.00)
+ * - Handles dot decimals ("6.00" -> 6.00, "10.01" -> 10.01)
+ * - Handles thousands+decimal mixes ("1.234,5" -> 1234.5)
+ * - Strips unit text (km, m, meters, quilômetros)
+ * - Detects meters via column name or unit text in value
+ * - For running activities, divides absurdly high values (>100) by 100
+ * - For running activities named "12 K"/"12K" with abnormally low value, scales up
+ */
+export function normalizeDistanceToKm(
+  value: unknown,
+  rawRow: Record<string, unknown> = {},
+  columnName: string = "",
+): number | null {
+  if (value === null || value === undefined) return null;
+  const original = String(value).trim();
+  if (!original || original === "--" || original === "-") return null;
+
+  const lower = original.toLowerCase();
+  const hasMeterUnit = /(\bm\b|\bmeters?\b|\bmetros?\b)/.test(lower) && !/km|quil/.test(lower);
+  const hasKmUnit = /(km|quil)/.test(lower);
+  const colLower = columnName.toLowerCase();
+  const colSaysMeters = /(metro|meters|\bm\b)/.test(colLower) && !/km|quil/.test(colLower);
+
+  // Strip unit text
+  let s = lower
+    .replace(/quil[oô]metros?/g, "")
+    .replace(/meters?/g, "")
+    .replace(/metros?/g, "")
+    .replace(/km/g, "")
+    .replace(/\bm\b/g, "")
+    .trim();
+
+  // Decimal separator handling
+  const hasDot = s.includes(".");
+  const hasComma = s.includes(",");
+  if (hasDot && hasComma) {
+    // Comma is decimal, dot is thousands → "1.234,5" => 1234.5
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else if (hasComma) {
+    // Comma as decimal → "6,00" => "6.00"
+    s = s.replace(",", ".");
+  }
+  // If only dot or only digits: keep as-is (dot is decimal).
+
+  const m = s.match(/-?\d+(?:\.\d+)?/);
+  if (!m) return null;
+  let n = Number(m[0]);
+  if (isNaN(n)) return null;
+
+  // Convert meters to km when explicitly indicated
+  if (hasMeterUnit || colSaysMeters) n = n / 1000;
+
+  // Activity context for heuristics
+  const activityType = String(rawRow["activity_type"] ?? rawRow["Tipo"] ?? rawRow["Activity Type"] ?? "").toLowerCase();
+  const activityName = String(rawRow["activity_name"] ?? rawRow["Título"] ?? rawRow["Titulo"] ?? rawRow["Nome"] ?? "").toLowerCase();
+  const isRunning = /(running|\brun\b|corrida|trail)/.test(activityType) || /corrida/.test(activityName);
+
+  // Absurdly high for a running activity → likely scaled by 100 (e.g. 600 → 6.00)
+  if (isRunning && n > 100 && n < 100000) {
+    n = n / 100;
+  }
+
+  // Inverse: name suggests "N K"/"N km" but stored value far below → scale up
+  if (isRunning && n > 0 && n < 5) {
+    const nameKm = activityName.match(/(\d{1,2}(?:[.,]\d)?)\s*k(?:m)?\b/);
+    if (nameKm) {
+      const expected = Number(nameKm[1].replace(",", "."));
+      if (expected >= 5 && Math.abs(n * 10 - expected) < 1.5) {
+        n = n * 10;
+      }
+    }
+  }
+
+  return n;
+}
+
+export type DistanceNormalization = {
+  km: number | null;
+  original: string | null;
+  corrected: boolean;
+  warning: string | null;
+};
+
+export function normalizeDistanceWithMeta(
+  value: unknown,
+  rawRow: Record<string, unknown> = {},
+  columnName: string = "",
+): DistanceNormalization {
+  if (value === null || value === undefined || String(value).trim() === "") {
+    return { km: null, original: null, corrected: false, warning: null };
+  }
+  const original = String(value).trim();
+  const km = normalizeDistanceToKm(value, rawRow, columnName);
+  // Naive "as-typed" parse for comparison
+  const naive = (() => {
+    const s = original.toLowerCase().replace(",", ".").replace(/[^0-9.]/g, "");
+    const n = Number(s);
+    return isNaN(n) ? null : n;
+  })();
+  const corrected = km !== null && naive !== null && Math.abs(km - naive) > 0.01;
+
+  let warning: string | null = null;
+  const activityName = String(rawRow["activity_name"] ?? rawRow["Título"] ?? rawRow["Titulo"] ?? rawRow["Nome"] ?? "");
+  const nameKm = activityName.toLowerCase().match(/(\d{1,2}(?:[.,]\d)?)\s*k(?:m)?\b/);
+  if (km !== null && nameKm) {
+    const expected = Number(nameKm[1].replace(",", "."));
+    if (expected >= 3 && Math.abs(km - expected) > Math.max(2, expected * 0.3)) {
+      warning = `Possível inconsistência: nome indica ${expected} km, mas distância importada é ${km.toFixed(2)} km.`;
+    }
+  }
+  return { km, original, corrected, warning };
 }
 
 export type TrainingRow = {
