@@ -417,15 +417,17 @@ function Mini({ label, value, hint }: { label: string; value: string | number; h
 
 function StatusCard({
   title, value, hint, tone,
-}: { title: string; value: string; hint?: string; tone: "success" | "warning" | "destructive" }) {
+}: { title: string; value: string; hint?: string; tone: "success" | "warning" | "destructive" | "muted" }) {
   const cls =
     tone === "success" ? "border-success/40 bg-success/5" :
     tone === "warning" ? "border-warning/40 bg-warning/5" :
-                         "border-destructive/40 bg-destructive/5";
+    tone === "destructive" ? "border-destructive/40 bg-destructive/5" :
+                         "border-border bg-card/40";
   const valueCls =
     tone === "success" ? "text-success" :
     tone === "warning" ? "text-warning" :
-                         "text-destructive";
+    tone === "destructive" ? "text-destructive" :
+                         "text-foreground";
   return (
     <Card className={cls}>
       <CardContent className="p-4">
