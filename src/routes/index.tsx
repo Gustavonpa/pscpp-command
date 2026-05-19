@@ -15,7 +15,7 @@ import {
 import { startOfWeek, endOfWeek, fmtDate, fmtWeekLabel, addDays } from "@/lib/week";
 import { parseDurationToHours } from "@/lib/garmin";
 import { classifyTraining, paceToSeconds, secondsToPace, formatDisplayDistance } from "@/lib/garmin-training";
-import { MEIA_POA_DATE, weeksUntil } from "@/lib/plan-template";
+import { MEIA_POA_DATE, weeksUntil, PILOTO_GOALS, weekStage } from "@/lib/plan-template";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,8 +44,8 @@ type GarminTraining = {
   average_pace: string | null; average_heart_rate: number | null; calories: number | null;
 };
 
-const STUDY_BLOCKS_TARGET = 5;
-const TRAININGS_TARGET = 4;
+const STUDY_BLOCKS_TARGET = PILOTO_GOALS.studyBlocks;
+const TRAININGS_TARGET = PILOTO_GOALS.trainingsTotal;
 const RUN_KM_TARGET = 20;
 const LONGRUN_TARGET = 8;
 const SLEEP_TARGET = 7;
@@ -132,6 +132,11 @@ function Dashboard() {
     if (studies.some((s) => s.date === d)) break;
     daysWithoutStudy++;
   }
+  // Tem algum estudo registrado em qualquer momento? (não punir histórico zero como “3 dias sem estudar”)
+  const everStudied = studies.length > 0;
+
+  // Estágio da semana (não punitivo no início)
+  const stage = weekStage();
 
   // Score per pillar
   const pscppScore = studyBlocks >= STUDY_BLOCKS_TARGET ? 2 : studyBlocks >= 3 ? 1 : 0;
@@ -139,19 +144,38 @@ function Dashboard() {
     (trainingsCount >= 3 ? 1 : 0) +
     (avgSleep >= SLEEP_TARGET ? 1 : avgSleep >= SLEEP_MIN ? 0.5 : 0);
   const rotinaScore =
-    (wakeOnTime >= 5 ? 1 : wakeOnTime >= 3 ? 0.5 : 0) +
+    (wakeOnTime >= PILOTO_GOALS.wakeOnTime ? 1 : wakeOnTime >= 2 ? 0.5 : 0) +
     (phoneAbuse <= 2 ? 1 : 0) +
-    (meals >= 4 ? 1 : meals >= 2 ? 0.5 : 0);
+    (meals >= PILOTO_GOALS.meals ? 1 : meals >= 2 ? 0.5 : 0);
 
   const overallScore = pscppScore + corpoScore + rotinaScore;
-  const overall =
-    overallScore >= 5.5 ? { label: "Vencida", tone: "success" as const, desc: "Semana no plano." } :
-    overallScore >= 3 ? { label: "Atenção", tone: "warning" as const, desc: "Recuperável, foco no que falta." } :
-                        { label: "Crítica", tone: "destructive" as const, desc: "Reagir agora." };
+  const noActivity = studyBlocks === 0 && trainingsCount === 0 && checkins.length === 0;
+
+  // Status geral por estágio da semana
+  const overall: { label: string; tone: "success" | "warning" | "destructive" | "muted"; desc: string } = (() => {
+    if (stage === "inicio" && noActivity) {
+      return { label: "Semana iniciando", tone: "muted", desc: "Execute a primeira ação." };
+    }
+    if (stage === "meio") {
+      if (studyBlocks < 2 || trainingsCount === 0) {
+        return { label: "Atenção", tone: "warning", desc: "Ajustar hoje." };
+      }
+    }
+    if (stage === "fim") {
+      if (studyBlocks < 3 || trainingsCount < 2) {
+        return { label: "Crítico", tone: "destructive", desc: "Retomar com mínimo diário." };
+      }
+    }
+    if (overallScore >= 5.5) return { label: "No plano", tone: "success", desc: "Manter execução." };
+    if (overallScore >= 3) return { label: "Atenção", tone: "warning", desc: "Ajustar hoje." };
+    if (stage === "inicio") return { label: "Semana iniciando", tone: "muted", desc: "Execute a primeira ação." };
+    return { label: "Crítico", tone: "destructive", desc: "Retomar com mínimo diário." };
+  })();
 
   // Próxima ação
   let nextAction = "Manter execução. Próximo bloco planejado.";
-  if (studyBlocks < 3) nextAction = "Hoje: fazer 30 min de PSCPP.";
+  if (stage === "inicio" && noActivity) nextAction = "Comece a semana: 30 min de PSCPP ou check-in do dia.";
+  else if (studyBlocks < 3) nextAction = "Hoje: fazer 30 min de PSCPP.";
   else if (trainingsCount === 0) nextAction = "Hoje: realizar treino planejado ou caminhada leve.";
   else if (avgSleep > 0 && avgSleep < SLEEP_MIN) nextAction = "Hoje: priorizar dormir antes de 23h30.";
   else if (longRun && (longRun.distance_km ?? 0) < LONGRUN_TARGET) nextAction = "Hoje/Sábado: agendar longão (≥ 8 km).";
@@ -171,14 +195,22 @@ function Dashboard() {
   const yellows: string[] = [];
   const reds: string[] = [];
 
-  if (studyBlocks >= STUDY_BLOCKS_TARGET) greens.push(`Meta de estudo batida: ${studyBlocks} blocos.`);
-  else if (studyBlocks >= 3) yellows.push("Estudo abaixo da meta. Ainda dá tempo.");
-  else yellows.push("Atenção à consistência: menos de 3 blocos de estudo.");
-  if (daysWithoutStudy >= 3) reds.push(`${daysWithoutStudy} dias sem estudar. Quebra de hábito.`);
+  // Estudo — alertas inteligentes
+  if (!everStudied) {
+    yellows.push("Nenhum bloco registrado ainda. Comece com 30 min hoje.");
+  } else if (daysWithoutStudy >= 7) {
+    reds.push("7 dias sem estudar. Hábito quebrado — reinicie com 15 min.");
+  } else if (daysWithoutStudy >= 3) {
+    reds.push("3 dias sem estudar. Retome hoje com bloco mínimo.");
+  } else if (studyBlocks >= STUDY_BLOCKS_TARGET) {
+    greens.push(`Meta de estudo batida: ${studyBlocks} blocos.`);
+  } else if (stage !== "inicio" && studyBlocks < 3) {
+    yellows.push("Atenção à consistência: menos de 3 blocos de estudo.");
+  }
 
   if (trainingsCount >= 3) greens.push(`Treinos no plano: ${trainingsCount}.`);
   else if (trainingsCount >= 1) yellows.push("Volume de treino abaixo do plano.");
-  else reds.push("Corpo fora do plano: nenhum treino na semana.");
+  else if (stage !== "inicio") reds.push("Corpo fora do plano: nenhum treino na semana.");
 
   if (avgSleep >= SLEEP_TARGET) greens.push(`Sono médio bom: ${avgSleep.toFixed(1)}h.`);
   else if (avgSleep >= SLEEP_MIN) yellows.push(`Sono no limite: ${avgSleep.toFixed(1)}h.`);
@@ -194,7 +226,7 @@ function Dashboard() {
   const weeksLeft = weeksUntil(MEIA_POA_DATE);
   const nextLongTarget = Math.min(20, Math.max(LONGRUN_TARGET, Math.round((longRun?.distance_km ?? LONGRUN_TARGET) + 1)));
   const meiaStatus =
-    runs.length >= 2 && totalDistKm >= RUN_KM_TARGET && (longRun?.distance_km ?? 0) >= LONGRUN_TARGET
+    runs.length >= PILOTO_GOALS.runs && totalDistKm >= RUN_KM_TARGET && (longRun?.distance_km ?? 0) >= LONGRUN_TARGET
       ? { label: "No plano", tone: "success" as const }
       : runs.length >= 1
         ? { label: "Atenção", tone: "warning" as const }
