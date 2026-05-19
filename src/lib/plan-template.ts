@@ -5,7 +5,13 @@ export type PlanStatus = "pendente" | "feito" | "pulado" | "reagendado";
 export const PLAN_STATUSES: PlanStatus[] = ["pendente", "feito", "pulado", "reagendado"];
 
 export const DAY_LABEL: Record<number, string> = {
-  1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado", 7: "Domingo",
+  1: "Segunda",
+  2: "Terça",
+  3: "Quarta",
+  4: "Quinta",
+  5: "Sexta",
+  6: "Sábado",
+  7: "Domingo",
 };
 
 export type PlanTemplateItem = {
@@ -19,11 +25,41 @@ export type PlanTemplateItem = {
 
 export const DEFAULT_PLAN: PlanTemplateItem[] = [
   // PSCPP — 5 blocos
-  { category: "PSCPP", day_of_week: 1, title: "Matemática", detail: "30 min", duration_min: 30 },
-  { category: "PSCPP", day_of_week: 2, title: "Inglês", detail: "30 min", duration_min: 30 },
-  { category: "PSCPP", day_of_week: 3, title: "Matemática", detail: "30 min", duration_min: 30 },
-  { category: "PSCPP", day_of_week: 4, title: "Náutica", detail: "30 min", duration_min: 30 },
-  { category: "PSCPP", day_of_week: 5, title: "Revisão", detail: "30 min", duration_min: 30 },
+  {
+    category: "PSCPP",
+    day_of_week: 1,
+    title: "Manobrabilidade do Navio",
+    detail: "Squat e águas rasas · 40 min",
+    duration_min: 40,
+  },
+  {
+    category: "PSCPP",
+    day_of_week: 2,
+    title: "Navegação em Águas Restritas",
+    detail: "Passage planning · 40 min",
+    duration_min: 40,
+  },
+  {
+    category: "PSCPP",
+    day_of_week: 3,
+    title: "Legislação e Regulamentação",
+    detail: "NORMAMs / RIPEAM · 40 min",
+    duration_min: 40,
+  },
+  {
+    category: "PSCPP",
+    day_of_week: 4,
+    title: "Arte Naval",
+    detail: "Rebocadores e amarração · 40 min",
+    duration_min: 40,
+  },
+  {
+    category: "PSCPP",
+    day_of_week: 5,
+    title: "Revisão PSCPP",
+    detail: "Consolidar 5 bullets da semana · 30 min",
+    duration_min: 30,
+  },
   // Corpo — 5 treinos
   { category: "Corpo", day_of_week: 1, title: "Fortalecimento A", duration_min: 45 },
   { category: "Corpo", day_of_week: 3, title: "Corrida qualidade", duration_min: 40 },

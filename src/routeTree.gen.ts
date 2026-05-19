@@ -12,10 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudyRouteImport } from './routes/study'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as PlanRouteImport } from './routes/plan'
+import { Route as MapaRouteImport } from './routes/mapa'
 import { Route as ImportGarminRouteImport } from './routes/import-garmin'
 import { Route as GarminTrainingsRouteImport } from './routes/garmin-trainings'
 import { Route as GarminSleepRouteImport } from './routes/garmin-sleep'
+import { Route as ConteudoProgramaticoRouteImport } from './routes/conteudo-programatico'
 import { Route as CheckinRouteImport } from './routes/checkin'
+import { Route as BibliotecaRouteImport } from './routes/biblioteca'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -34,6 +37,11 @@ const PlanRoute = PlanRouteImport.update({
   path: '/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MapaRoute = MapaRouteImport.update({
+  id: '/mapa',
+  path: '/mapa',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ImportGarminRoute = ImportGarminRouteImport.update({
   id: '/import-garmin',
   path: '/import-garmin',
@@ -49,9 +57,19 @@ const GarminSleepRoute = GarminSleepRouteImport.update({
   path: '/garmin-sleep',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConteudoProgramaticoRoute = ConteudoProgramaticoRouteImport.update({
+  id: '/conteudo-programatico',
+  path: '/conteudo-programatico',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckinRoute = CheckinRouteImport.update({
   id: '/checkin',
   path: '/checkin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BibliotecaRoute = BibliotecaRouteImport.update({
+  id: '/biblioteca',
+  path: '/biblioteca',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -68,10 +86,13 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/biblioteca': typeof BibliotecaRoute
   '/checkin': typeof CheckinRoute
+  '/conteudo-programatico': typeof ConteudoProgramaticoRoute
   '/garmin-sleep': typeof GarminSleepRoute
   '/garmin-trainings': typeof GarminTrainingsRoute
   '/import-garmin': typeof ImportGarminRoute
+  '/mapa': typeof MapaRoute
   '/plan': typeof PlanRoute
   '/review': typeof ReviewRoute
   '/study': typeof StudyRoute
@@ -79,10 +100,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/biblioteca': typeof BibliotecaRoute
   '/checkin': typeof CheckinRoute
+  '/conteudo-programatico': typeof ConteudoProgramaticoRoute
   '/garmin-sleep': typeof GarminSleepRoute
   '/garmin-trainings': typeof GarminTrainingsRoute
   '/import-garmin': typeof ImportGarminRoute
+  '/mapa': typeof MapaRoute
   '/plan': typeof PlanRoute
   '/review': typeof ReviewRoute
   '/study': typeof StudyRoute
@@ -91,10 +115,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/biblioteca': typeof BibliotecaRoute
   '/checkin': typeof CheckinRoute
+  '/conteudo-programatico': typeof ConteudoProgramaticoRoute
   '/garmin-sleep': typeof GarminSleepRoute
   '/garmin-trainings': typeof GarminTrainingsRoute
   '/import-garmin': typeof ImportGarminRoute
+  '/mapa': typeof MapaRoute
   '/plan': typeof PlanRoute
   '/review': typeof ReviewRoute
   '/study': typeof StudyRoute
@@ -104,10 +131,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/biblioteca'
     | '/checkin'
+    | '/conteudo-programatico'
     | '/garmin-sleep'
     | '/garmin-trainings'
     | '/import-garmin'
+    | '/mapa'
     | '/plan'
     | '/review'
     | '/study'
@@ -115,10 +145,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/biblioteca'
     | '/checkin'
+    | '/conteudo-programatico'
     | '/garmin-sleep'
     | '/garmin-trainings'
     | '/import-garmin'
+    | '/mapa'
     | '/plan'
     | '/review'
     | '/study'
@@ -126,10 +159,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/biblioteca'
     | '/checkin'
+    | '/conteudo-programatico'
     | '/garmin-sleep'
     | '/garmin-trainings'
     | '/import-garmin'
+    | '/mapa'
     | '/plan'
     | '/review'
     | '/study'
@@ -138,10 +174,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  BibliotecaRoute: typeof BibliotecaRoute
   CheckinRoute: typeof CheckinRoute
+  ConteudoProgramaticoRoute: typeof ConteudoProgramaticoRoute
   GarminSleepRoute: typeof GarminSleepRoute
   GarminTrainingsRoute: typeof GarminTrainingsRoute
   ImportGarminRoute: typeof ImportGarminRoute
+  MapaRoute: typeof MapaRoute
   PlanRoute: typeof PlanRoute
   ReviewRoute: typeof ReviewRoute
   StudyRoute: typeof StudyRoute
@@ -170,6 +209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mapa': {
+      id: '/mapa'
+      path: '/mapa'
+      fullPath: '/mapa'
+      preLoaderRoute: typeof MapaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/import-garmin': {
       id: '/import-garmin'
       path: '/import-garmin'
@@ -191,11 +237,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GarminSleepRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conteudo-programatico': {
+      id: '/conteudo-programatico'
+      path: '/conteudo-programatico'
+      fullPath: '/conteudo-programatico'
+      preLoaderRoute: typeof ConteudoProgramaticoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkin': {
       id: '/checkin'
       path: '/checkin'
       fullPath: '/checkin'
       preLoaderRoute: typeof CheckinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/biblioteca': {
+      id: '/biblioteca'
+      path: '/biblioteca'
+      fullPath: '/biblioteca'
+      preLoaderRoute: typeof BibliotecaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -218,10 +278,13 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  BibliotecaRoute: BibliotecaRoute,
   CheckinRoute: CheckinRoute,
+  ConteudoProgramaticoRoute: ConteudoProgramaticoRoute,
   GarminSleepRoute: GarminSleepRoute,
   GarminTrainingsRoute: GarminTrainingsRoute,
   ImportGarminRoute: ImportGarminRoute,
+  MapaRoute: MapaRoute,
   PlanRoute: PlanRoute,
   ReviewRoute: ReviewRoute,
   StudyRoute: StudyRoute,
@@ -229,3 +292,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

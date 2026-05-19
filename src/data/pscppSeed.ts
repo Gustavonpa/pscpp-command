@@ -1,0 +1,570 @@
+import type { NextObjectiveAction, ProgramTopic, StudyCluster, StudyMaterial } from "@/types/pscpp";
+
+export const studyClusters: StudyCluster[] = [
+  {
+    id: "manobrabilidade",
+    name: "Manobrabilidade do Navio",
+    description:
+      "Hidrodinâmica aplicada, comportamento do navio e efeitos ambientais nas manobras.",
+    priority: "altíssima",
+    status: "em andamento",
+    progress: 12,
+    topics: [
+      "hidrodinâmica",
+      "resistência ao avanço",
+      "propulsão",
+      "controlabilidade",
+      "padrões IMO de manobrabilidade",
+      "geometria do navio",
+      "manobras",
+      "curvas de giro",
+      "crash stop",
+      "águas rasas",
+      "bank effect",
+      "squat",
+      "interação navio-navio",
+      "efeito do vento",
+      "efeito da corrente",
+      "efeito das ondas",
+      "manobras especiais",
+    ],
+    nextActions: ["Ler squat e interação", "Criar resumo de águas rasas", "Listar padrões IMO"],
+    questionsDone: 0,
+    accuracy: 0,
+    lastReview: null,
+    nextReview: "2026-05-20",
+  },
+  {
+    id: "arte-naval",
+    name: "Arte Naval",
+    description:
+      "Estrutura, nomenclatura, equipamentos, rebocadores, amarração e fundamentos práticos do navio.",
+    priority: "alta",
+    status: "não iniciado",
+    progress: 6,
+    topics: [
+      "nomenclatura do navio",
+      "geometria do navio",
+      "classificação dos navios",
+      "trabalhos do marinheiro",
+      "aparelho de laborar",
+      "aparelho de fundear",
+      "aparelho de suspender",
+      "aparelho de governo",
+      "manobra do navio",
+      "amarração",
+      "cabos",
+      "âncoras",
+      "rebocadores",
+      "tipos de rebocadores",
+      "bollard pull",
+      "interação com rebocadores",
+      "estabilidade",
+      "dimensões do navio",
+      "infraestrutura marítima",
+    ],
+    nextActions: ["Separar materiais de rebocadores", "Revisar estabilidade básica"],
+    questionsDone: 0,
+    accuracy: 0,
+    lastReview: null,
+    nextReview: null,
+  },
+  {
+    id: "navegacao-restrita",
+    name: "Navegação em Águas Restritas",
+    description:
+      "Planejamento, execução e monitoramento de derrota em áreas de navegação restrita.",
+    priority: "altíssima",
+    status: "em andamento",
+    progress: 10,
+    topics: [
+      "planejamento de derrota",
+      "carta náutica",
+      "projeções cartográficas",
+      "agulhas náuticas",
+      "navegação costeira",
+      "navegação estimada",
+      "linhas de posição",
+      "navegação em águas restritas",
+      "instrumentos náuticos",
+      "publicações náuticas",
+      "auxílios à navegação",
+      "radar",
+      "AIS",
+      "ECDIS",
+      "passage planning",
+      "bridge team management",
+      "pilotage exchange",
+      "master-pilot information exchange",
+      "monitoramento da derrota",
+    ],
+    nextActions: [
+      "Abrir Bridge Procedures Guide",
+      "Mapear publicações DHN",
+      "Criar checklist de passage planning",
+    ],
+    questionsDone: 0,
+    accuracy: 0,
+    lastReview: null,
+    nextReview: "2026-05-22",
+  },
+  {
+    id: "legislacao",
+    name: "Legislação e Regulamentação",
+    description:
+      "Normas nacionais e internacionais, autoridade marítima, RIPEAM, SOLAS e praticagem.",
+    priority: "altíssima",
+    status: "não iniciado",
+    progress: 4,
+    topics: [
+      "NORMAMs",
+      "RIPEAM/COLREG",
+      "SOLAS",
+      "autoridade marítima",
+      "Tribunal Marítimo",
+      "Lei 2.180",
+      "registro de propriedade marítima",
+      "praticagem",
+      "segurança da navegação",
+      "normas da DPC",
+      "normas da DHN",
+      "decretos",
+      "leis marítimas",
+      "portarias",
+      "publicações oficiais",
+    ],
+    nextActions: [
+      "Confirmar NORMAMs vigentes",
+      "Separar RIPEAM/COLREG",
+      "Criar índice da Lei 2.180",
+    ],
+    questionsDone: 0,
+    accuracy: 0,
+    lastReview: null,
+    nextReview: null,
+  },
+  {
+    id: "meteorologia",
+    name: "Meteorologia e Oceanografia",
+    description:
+      "Condições ambientais que afetam a navegação, o acesso portuário e a segurança da manobra.",
+    priority: "alta",
+    status: "não iniciado",
+    progress: 3,
+    topics: [
+      "meteorologia marítima",
+      "pressão atmosférica",
+      "vento",
+      "massas de ar",
+      "frentes",
+      "nevoeiro",
+      "tempestades",
+      "ondas",
+      "maré",
+      "correntes",
+      "oceanografia",
+      "previsão meteorológica",
+      "hidrometeorologia aplicada ao acesso portuário",
+    ],
+    nextActions: ["Confirmar material-base", "Criar mapa mental de maré/correntes"],
+    questionsDone: 0,
+    accuracy: 0,
+    lastReview: null,
+    nextReview: null,
+  },
+  {
+    id: "comunicacoes",
+    name: "Comunicações",
+    description:
+      "Fraseologia padrão, comunicação operacional, sinais e comunicações em emergência.",
+    priority: "alta",
+    status: "não iniciado",
+    progress: 2,
+    topics: [
+      "IMO Standard Marine Communication Phrases",
+      "SMCP",
+      "comunicação ponte-prático",
+      "comunicação com rebocadores",
+      "radiocomunicação",
+      "Código Internacional de Sinais",
+      "sinais visuais",
+      "sinais sonoros",
+      "comunicações em emergência",
+    ],
+    nextActions: ["Confirmar A918(22) MSCP", "Organizar CIS", "Criar cartões de SMCP"],
+    questionsDone: 0,
+    accuracy: 0,
+    lastReview: null,
+    nextReview: null,
+  },
+  {
+    id: "conhecimentos-gerais",
+    name: "Conhecimentos Gerais, Portos, Economia e Direito Marítimo",
+    description: "Portos, comércio marítimo, economia, direito marítimo e interface navio-porto.",
+    priority: "média",
+    status: "não iniciado",
+    progress: 5,
+    topics: [
+      "planejamento portuário",
+      "canais de acesso",
+      "áreas de risco",
+      "interface navio-porto",
+      "VTS",
+      "DP",
+      "economia marítima",
+      "transporte marítimo",
+      "portos",
+      "comércio internacional",
+      "direito processual marítimo",
+      "acidentes e fatos da navegação",
+      "responsabilidades marítimas",
+    ],
+    nextActions: [
+      "Separar CONAPRA",
+      "Definir capítulos de Economia Marítima",
+      "Conectar direito marítimo à Lei 2.180",
+    ],
+    questionsDone: 0,
+    accuracy: 0,
+    lastReview: null,
+    nextReview: null,
+  },
+];
+
+export const studyMaterials: StudyMaterial[] = [
+  {
+    id: "ship-resistance-flow",
+    title: "Ship Resistance and Flow",
+    type: "livro",
+    clusterIds: ["manobrabilidade"],
+    chapters: "1 a 8",
+    priority: "altíssima",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "practical-ship-hydrodynamics",
+    title: "Practical Ship Hydrodynamics",
+    type: "livro",
+    clusterIds: ["manobrabilidade"],
+    chapters: "2, 3 e 6",
+    priority: "altíssima",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "manobra-navio-seculo-21",
+    title: "A Manobra do Navio no Século 21",
+    type: "livro",
+    clusterIds: ["manobrabilidade"],
+    chapters: "2 ao 11",
+    priority: "altíssima",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "hidrodinamica-ondas",
+    title: "Princípios de Hidrodinâmica e Ação das Ondas",
+    type: "livro",
+    clusterIds: ["manobrabilidade"],
+    chapters: "3 e 4",
+    priority: "alta",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "marine-pilotage",
+    title: "Theory and Practices of Marine Pilotage",
+    type: "livro",
+    clusterIds: ["arte-naval", "navegacao-restrita"],
+    chapters: "3, 4, 5, 6, 13, 14, 15, 16, 17, 18 e 19",
+    priority: "altíssima",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "estabilidade-rebocadores",
+    title: "Estabilidade dos Rebocadores",
+    type: "livro",
+    clusterIds: ["arte-naval"],
+    chapters: "2",
+    priority: "alta",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "mooring-anchoring",
+    title: "Mooring and Anchoring Ships: Principles and Practice",
+    type: "livro",
+    clusterIds: ["arte-naval"],
+    chapters: "6",
+    priority: "alta",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "bridge-procedures-guide",
+    title: "Bridge Procedures Guide",
+    type: "livro",
+    clusterIds: ["navegacao-restrita"],
+    chapters: "2, 3, 5 e 6",
+    priority: "altíssima",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "navegacao-integrada",
+    title: "Navegação Integrada",
+    type: "livro",
+    clusterIds: ["navegacao-restrita"],
+    chapters: "4ª edição",
+    priority: "altíssima",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "meteorologia-nocoes-basicas",
+    title: "Meteorologia: Noções Básicas",
+    type: "livro",
+    clusterIds: ["meteorologia"],
+    priority: "alta",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+    notes: "Prioridade média/alta no levantamento original.",
+  },
+  {
+    id: "planejamento-portuario-conapra",
+    title: "Planejamento Portuário — CONAPRA",
+    type: "livro",
+    clusterIds: ["conhecimentos-gerais"],
+    chapters: "2 e 8",
+    priority: "alta",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "shiphandling-beautiful-game",
+    title: "Shiphandling the Beautiful Game",
+    type: "livro",
+    clusterIds: ["arte-naval", "manobrabilidade"],
+    chapters: "1, 3, 11 e 12",
+    priority: "alta",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "economia-maritima",
+    title: "Economia Marítima",
+    type: "livro",
+    clusterIds: ["conhecimentos-gerais"],
+    chapters: "1 ao 17",
+    priority: "média",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "direito-processual-maritimo",
+    title: "Direito Processual Marítimo",
+    type: "livro",
+    clusterIds: ["legislacao", "conhecimentos-gerais"],
+    chapters: "1 ao 11",
+    priority: "alta",
+    status: "não iniciado",
+    origin: "Jorge",
+    hasFile: "confirmar",
+    notes: "Prioridade média/alta no levantamento original.",
+  },
+  {
+    id: "resolucoes-imo",
+    title: "Resoluções da IMO",
+    type: "resolução IMO",
+    clusterIds: ["legislacao"],
+    priority: "alta",
+    status: "confirmar",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "solas",
+    title: "SOLAS",
+    type: "norma",
+    clusterIds: ["legislacao"],
+    priority: "alta",
+    status: "confirmar",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "pianc",
+    title: "PIANC",
+    type: "publicação DHN",
+    clusterIds: ["conhecimentos-gerais", "navegacao-restrita"],
+    priority: "alta",
+    status: "confirmar",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "normams",
+    title: "NORMAMs",
+    type: "norma",
+    clusterIds: ["legislacao"],
+    priority: "altíssima",
+    status: "confirmar",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+  {
+    id: "leis-decretos",
+    title: "Leis e Decretos",
+    type: "legislação",
+    clusterIds: ["legislacao"],
+    priority: "alta",
+    status: "confirmar",
+    origin: "Jorge",
+    hasFile: "confirmar",
+  },
+];
+
+const oldMaterialTitles = [
+  "A918(22) MSCP",
+  "CIS",
+  "RIPEAM",
+  "Carta 12000",
+  "IMO A960",
+  "PIANC Harbour Approach Design Guidelines 2014",
+  "Ship Stability 2008",
+  "Squat Interaction Maneuvering",
+  "Ship Handling 2019",
+  "Lei 2.180",
+  "NORMAM-12",
+  "NORMAM-26",
+  "Prova 2008",
+  "Resultado 2008",
+  "Resultado 2011",
+  "Conteúdo Programático Final",
+  "Bibliografia Final",
+  "Planejamento Estudos",
+  "ABP12_P - PIANC Harbour Approach Design Guidelines 2014",
+  "ANULADAS 2008",
+  "AVISOS AOS NAVEGANTES",
+  "Comunicacao Opcoes ZP",
+  "Curso de Exercícios 2022",
+  "Dicionário",
+  "EROG",
+  "Roteiro Costa Sul",
+  "Homologação 2013",
+  "Implementing e-Navigation",
+  "ITS2002 Paper Carrousel Tug",
+  "Livro Rebocadores ICN",
+  "Propulsion III Interação com casco",
+  "Propulsion IV Materiais cavitação tipos",
+  "Opções ZP PSCPP 2008",
+  "Prático da Marinha Homologação e Convocação",
+  "PUB102",
+  "Simbologia",
+  "TUIP",
+  "SHFTM",
+];
+
+export const oldArchiveMaterials: StudyMaterial[] = oldMaterialTitles.map((title, index) => ({
+  id: `arquivo-antigo-${index + 1}`,
+  title,
+  type: title.toLowerCase().includes("prova")
+    ? "prova antiga"
+    : title.toLowerCase().includes("normam")
+      ? "norma"
+      : "outro",
+  clusterIds: inferClusterIds(title),
+  priority: inferPriority(title),
+  status: "confirmar",
+  origin: "arquivo antigo",
+  hasFile: "sim",
+  fileName: `${title}.pdf`,
+  notes: "Abrir PDF e confirmar conteúdo, escopo e capítulos úteis.",
+}));
+
+export const allStudyMaterials = [...studyMaterials, ...oldArchiveMaterials];
+
+export const programTopics: ProgramTopic[] = studyClusters.flatMap((cluster) =>
+  cluster.topics.slice(0, 8).map((topic, index) => ({
+    id: `${cluster.id}-${index + 1}`,
+    name: topic,
+    clusterId: cluster.id,
+    subtopics: [],
+    relatedMaterialIds: allStudyMaterials
+      .filter((m) => m.clusterIds.includes(cluster.id))
+      .slice(0, 3)
+      .map((m) => m.id),
+    studyStatus: index < 2 && cluster.progress > 8 ? "iniciado" : "não iniciado",
+    importance: cluster.priority,
+    memorizationNeed:
+      cluster.id === "legislacao" || cluster.id === "comunicacoes" ? "alta" : "média",
+    questionsDone: 0,
+    accuracy: 0,
+    lastReview: null,
+    nextReview: index === 0 ? cluster.nextReview : null,
+  })),
+);
+
+export const nextObjectiveAction: NextObjectiveAction = {
+  cluster: "Manobrabilidade do Navio",
+  topic: "Squat",
+  material: "Squat Interaction Maneuvering",
+  duration: "40 minutos",
+  task: "ler 5 páginas e criar 5 bullets de resumo com foco em águas rasas e interação.",
+};
+
+function inferClusterIds(title: string): string[] {
+  const t = title.toLowerCase();
+  if (t.includes("squat") || t.includes("ship handling") || t.includes("propulsion"))
+    return ["manobrabilidade"];
+  if (t.includes("rebocadores") || t.includes("tug") || t.includes("stability"))
+    return ["arte-naval"];
+  if (
+    t.includes("pianc") ||
+    t.includes("carta") ||
+    t.includes("roteiro") ||
+    t.includes("pub102") ||
+    t.includes("simbologia")
+  )
+    return ["navegacao-restrita"];
+  if (
+    t.includes("normam") ||
+    t.includes("ripeam") ||
+    t.includes("lei") ||
+    t.includes("imo") ||
+    t.includes("homologação")
+  )
+    return ["legislacao"];
+  if (t.includes("mscp") || t.includes("cis") || t.includes("comunicacao")) return ["comunicacoes"];
+  return ["conhecimentos-gerais"];
+}
+
+function inferPriority(title: string): "média" | "alta" | "altíssima" {
+  const t = title.toLowerCase();
+  if (
+    t.includes("normam") ||
+    t.includes("ripeam") ||
+    t.includes("squat") ||
+    t.includes("conteúdo programático") ||
+    t.includes("bibliografia")
+  )
+    return "altíssima";
+  if (t.includes("prova") || t.includes("pianc") || t.includes("lei") || t.includes("imo"))
+    return "alta";
+  return "média";
+}
