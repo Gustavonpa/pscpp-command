@@ -4,8 +4,18 @@ import { useAuthGate } from "@/components/AuthGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { usePscppData } from "@/hooks/usePscppData";
+import type { PscppPriority, PscppStatus, StudyCluster } from "@/types/pscpp";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/mapa")({
   head: () => ({
@@ -19,8 +29,24 @@ export const Route = createFileRoute("/mapa")({
 
 function MapaPage() {
   const { user, loading } = useAuthGate();
-  const { clusters, materials, loading: loadingPscppData, source } = usePscppData();
+  const { clusters, materials, loading: loadingPscppData, source, updateCluster } = usePscppData();
   if (loading || !user || loadingPscppData) return null;
+
+  const canEdit = source === "supabase";
+
+  const handleClusterUpdate = async (
+    cluster: StudyCluster,
+    patch: Partial<
+      Pick<StudyCluster, "priority" | "status" | "progress" | "lastReview" | "nextReview">
+    >,
+  ) => {
+    const result = await updateCluster(cluster.id, patch);
+    if (result.ok) {
+      toast.success("Cluster atualizado");
+      return;
+    }
+    toast.error(result.message ?? "Não foi possível atualizar o cluster");
+  };
 
   return (
     <AppShell>
@@ -44,19 +70,57 @@ function MapaPage() {
                       {cluster.description}
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline">{cluster.priority}</Badge>
-                    <Badge variant="outline">{cluster.status}</Badge>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <EditableSelect
+                      label="Prioridade"
+                      value={cluster.priority}
+                      values={["baixa", "média", "alta", "altíssima"]}
+                      disabled={!canEdit}
+                      onChange={(value) =>
+                        handleClusterUpdate(cluster, { priority: value as PscppPriority })
+                      }
+                    />
+                    <EditableSelect
+                      label="Status"
+                      value={cluster.status}
+                      values={[
+                        "não iniciado",
+                        "em andamento",
+                        "em leitura",
+                        "resumido",
+                        "revisado",
+                        "finalizado",
+                        "confirmar",
+                      ]}
+                      disabled={!canEdit}
+                      onChange={(value) =>
+                        handleClusterUpdate(cluster, { status: value as PscppStatus })
+                      }
+                    />
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <div className="mb-1 flex justify-between text-xs">
-                    <span className="text-muted-foreground">Progresso</span>
-                    <span className="font-medium">{cluster.progress}%</span>
+                <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px]">
+                  <div>
+                    <div className="mb-1 flex justify-between text-xs">
+                      <span className="text-muted-foreground">Progresso</span>
+                      <span className="font-medium">{cluster.progress}%</span>
+                    </div>
+                    <Progress value={cluster.progress} className="h-1.5" />
                   </div>
-                  <Progress value={cluster.progress} className="h-1.5" />
+                  <EditableNumber
+                    label="Ajustar progresso"
+                    value={cluster.progress}
+                    disabled={!canEdit}
+                    onChange={(value) => handleClusterUpdate(cluster, { progress: value })}
+                  />
+                  <EditableDate
+                    label="Próxima revisão"
+                    value={cluster.nextReview}
+                    disabled={!canEdit}
+                    onChange={(value) => handleClusterUpdate(cluster, { nextReview: value })}
+                  />
                 </div>
                 <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
                   <div>
@@ -109,10 +173,112 @@ function Header({
         </Badge>
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
+        {source === "local" && (
+          <p className="mt-2 max-w-2xl text-xs text-warning">
+            Edição bloqueada até a migration PSCPP ser aplicada no Supabase.
+          </p>
+        )}
       </div>
       <Button asChild variant="outline">
         <Link to="/">Voltar ao dashboard</Link>
       </Button>
+    </div>
+  );
+}
+
+function EditableSelect({
+  label,
+  value,
+  values,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  values: string[];
+  disabled: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      {disabled ? (
+        <Badge variant="outline">{value}</Badge>
+      ) : (
+        <Select value={value} onValueChange={onChange}>
+          <SelectTrigger className="h-8 min-w-[140px] text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {values.map((item) => (
+              <SelectItem key={item} value={item}>
+                {item}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}
+
+function EditableNumber({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  disabled: boolean;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      {disabled ? (
+        <Badge variant="outline">{value}%</Badge>
+      ) : (
+        <Input
+          className="h-8 text-xs"
+          max={100}
+          min={0}
+          type="number"
+          value={value}
+          onChange={(event) => {
+            const nextValue = Number(event.target.value);
+            onChange(Math.min(100, Math.max(0, Number.isNaN(nextValue) ? 0 : nextValue)));
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditableDate({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: string | null;
+  disabled: boolean;
+  onChange: (value: string | null) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      {disabled ? (
+        <Badge variant="outline">{value ?? "sem data"}</Badge>
+      ) : (
+        <Input
+          className="h-8 text-xs"
+          type="date"
+          value={value ?? ""}
+          onChange={(event) => onChange(event.target.value || null)}
+        />
+      )}
     </div>
   );
 }

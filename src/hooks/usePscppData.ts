@@ -9,6 +9,12 @@ type PscppData = {
   topics: ProgramTopic[];
   loading: boolean;
   source: "supabase" | "local";
+  updateCluster: (
+    clusterId: string,
+    patch: Partial<
+      Pick<StudyCluster, "priority" | "status" | "progress" | "lastReview" | "nextReview">
+    >,
+  ) => Promise<{ ok: boolean; message?: string }>;
   updateMaterial: (
     materialId: string,
     patch: Partial<Pick<StudyMaterial, "priority" | "status" | "hasFile">>,
@@ -151,6 +157,44 @@ export function usePscppData(): PscppData {
     };
   }, []);
 
+  async function updateCluster(
+    clusterId: string,
+    patch: Partial<
+      Pick<StudyCluster, "priority" | "status" | "progress" | "lastReview" | "nextReview">
+    >,
+  ) {
+    if (data.source !== "supabase") {
+      return { ok: false, message: "A migration PSCPP ainda não foi aplicada no Supabase." };
+    }
+
+    const previousClusters = data.clusters;
+    setData((current) => ({
+      ...current,
+      clusters: current.clusters.map((cluster) =>
+        cluster.id === clusterId ? { ...cluster, ...patch } : cluster,
+      ),
+    }));
+
+    const payload: Record<string, string | number | null> = {};
+    if (patch.priority) payload.priority = patch.priority;
+    if (patch.status) payload.status = patch.status;
+    if (typeof patch.progress === "number") payload.progress = patch.progress;
+    if ("lastReview" in patch) payload.last_review = patch.lastReview ?? null;
+    if ("nextReview" in patch) payload.next_review = patch.nextReview ?? null;
+
+    const { error } = await supabase
+      .from("pscpp_clusters" as never)
+      .update(payload as never)
+      .eq("id", clusterId);
+
+    if (error) {
+      setData((current) => ({ ...current, clusters: previousClusters }));
+      return { ok: false, message: error.message };
+    }
+
+    return { ok: true };
+  }
+
   async function updateMaterial(
     materialId: string,
     patch: Partial<Pick<StudyMaterial, "priority" | "status" | "hasFile">>,
@@ -222,7 +266,7 @@ export function usePscppData(): PscppData {
     return { ok: true };
   }
 
-  return { ...data, updateMaterial, updateTopic };
+  return { ...data, updateCluster, updateMaterial, updateTopic };
 }
 
 function toCluster(row: ClusterRow): StudyCluster {

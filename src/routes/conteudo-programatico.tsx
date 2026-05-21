@@ -165,7 +165,7 @@ function ConteudoProgramaticoPage() {
               {rows.map((topic) => {
                 const clusterName =
                   clusters.find((item) => item.id === topic.clusterId)?.name ?? "—";
-                const materials = topic.relatedMaterialIds
+                const relatedMaterials = topic.relatedMaterialIds
                   .map((id) => materials.find((material) => material.id === id)?.title)
                   .filter(Boolean)
                   .join("; ");
@@ -233,7 +233,7 @@ function ConteudoProgramaticoPage() {
                       )}
                     </TableCell>
                     <TableCell className="min-w-[260px] text-muted-foreground">
-                      {materials || "—"}
+                      {relatedMaterials || "—"}
                     </TableCell>
                   </TableRow>
                 );
